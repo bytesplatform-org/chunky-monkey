@@ -9,8 +9,6 @@ import PillLink from "./PillLink";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const EDGES = ["#ef3b39", "#ffc93c", "#4cc35a", "#3b5bff", "#ff4fa3", "#ff7a2f"];
-
 /**
  * The rides as a pinned horizontal run on desktop: the page scrolls, the
  * cards travel sideways, each photo drawn through the wave shader. Phones and
@@ -57,9 +55,8 @@ export default function Rides() {
       <div className="flex min-h-lvh flex-col justify-center py-[clamp(80px,10vh,120px)]">
         <div className="mb-12 flex flex-col gap-6 px-(--gut) lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="eyebrow mb-5 text-red">02 / Park rides</p>
             <h2 className="display text-[clamp(3.2rem,8vw,8rem)]">
-              Find your<br />kind of <span className="text-red">fun.</span>
+              Find your<br />kind of fun.
             </h2>
           </div>
           <div className="flex max-w-sm flex-col items-start gap-6">
@@ -82,11 +79,10 @@ export default function Rides() {
                 alt={`${ride.name} ride at Chunky Monkey`}
                 sizes="(min-width: 1024px) 27vw, 70vw"
                 cursor="Ride"
-                edge={EDGES[i % EDGES.length]}
                 className="aspect-[609/645] rounded-[28px] bg-night/10"
               />
               <div className="mt-5 flex items-start gap-4">
-                <span className="display mt-1 text-2xl" style={{ color: EDGES[i % EDGES.length] }}>{String(i + 1).padStart(2, "0")}</span>
+                <span className="display mt-1 text-2xl text-night/35">{String(i + 1).padStart(2, "0")}</span>
                 <div>
                   <h3 className="display text-[clamp(2rem,3vw,3rem)]">{ride.name}</h3>
                   <p className="mt-1 text-night/65">{ride.line}</p>

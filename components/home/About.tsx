@@ -6,7 +6,6 @@ import PillLink from "./PillLink";
 export default function About() {
   return (
     <section id="about" className="relative px-(--gut) py-[clamp(96px,16vw,220px)]">
-      <p data-reveal className="eyebrow mb-10 text-yellow">01 / Who we are</p>
       <p data-reveal-words className="display max-w-[22ch] text-[clamp(2.4rem,6.4vw,6.5rem)] leading-[0.95]">
         <Words text="Chunky Monkey is Pakistan's home of family fun. Built to bring international-standard amusement parks to the cities we love." />
       </p>
@@ -20,10 +19,10 @@ export default function About() {
         </div>
       </div>
       <dl className="mt-[clamp(64px,10vw,140px)] grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-cream/10 bg-cream/10 lg:grid-cols-4">
-        {stats.map((stat, i) => (
+        {stats.map(stat => (
           <div key={stat.label} data-reveal className="flex flex-col gap-3 bg-night p-[clamp(20px,3vw,40px)]">
             <dt className="eyebrow order-2 text-cream/60">{stat.label}</dt>
-            <dd className={`display order-1 text-[clamp(4rem,9vw,8.5rem)] ${["text-red", "text-yellow", "text-green", "text-blue"][i]}`}>
+            <dd className="display order-1 text-[clamp(4rem,9vw,8.5rem)]">
               <Counter to={stat.value} />{stat.suffix}
             </dd>
           </div>

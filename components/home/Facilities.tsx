@@ -9,27 +9,24 @@ const ICONS: Record<(typeof facilities)[number]["icon"], React.ReactNode> = {
   prayer: <><path d="M12 3c-3 2-5 4.5-5 8h10c0-3.5-2-6-5-8zM5 11h14v9H5zM10 20v-4a2 2 0 014 0v4" /></>,
 };
 
-const COLORS = ["#ffc93c", "#ef3b39", "#4cc35a", "#3b5bff", "#ff4fa3", "#ff7a2f"];
-
 export default function Facilities() {
   return (
     <section className="relative px-(--gut) py-[clamp(96px,12vw,180px)]">
       <div className="grid gap-14 lg:grid-cols-[1fr_1.4fr]">
         <div>
-          <p data-reveal className="eyebrow mb-6 text-orange">06 / Facilities</p>
           <h2 data-reveal className="display text-[clamp(3rem,6.5vw,6.5rem)]">
             The fun part&apos;s on us.<br /><span className="text-cream/45">So is everything else.</span>
           </h2>
         </div>
         <ul className="grid grid-cols-2 gap-px self-end overflow-hidden rounded-3xl border border-cream/10 bg-cream/10 sm:grid-cols-3">
-          {facilities.map((f, i) => (
+          {facilities.map(f => (
             <li key={f.name} data-reveal className="group flex aspect-square flex-col justify-between bg-night p-[clamp(16px,2.4vw,32px)] transition-colors duration-500 hover:bg-dusk">
               <svg
                 viewBox="0 0 24 24"
                 aria-hidden
                 className="size-[clamp(36px,4vw,52px)] transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110"
                 fill="none"
-                stroke={COLORS[i]}
+                stroke="currentColor"
                 strokeWidth="1.6"
                 strokeLinecap="round"
                 strokeLinejoin="round"

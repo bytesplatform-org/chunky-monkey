@@ -5,12 +5,13 @@ import gsap from "gsap";
 import { prefersReducedMotion } from "@/lib/animation/prefs";
 import { markReady } from "@/lib/animation/ready";
 import { lockScroll } from "@/lib/animation/scroll";
+import { loadCoaster, onCoasterProgress } from "@/lib/scenes/coasterModel";
 
 /**
- * Covers the first paint, counts to 100 while the bulbs come on, then lifts
- * like a curtain and signals the page (markReady) so the hero intro plays in
- * view. Server-rendered so nothing flashes first; a CSS failsafe hides it if
- * the script never runs.
+ * Covers the first paint and counts up while the coaster model streams in,
+ * so the hero ride is ready the moment the curtain lifts. Then it signals the
+ * page (markReady). Server-rendered so nothing flashes first; a CSS failsafe
+ * hides it if the script never runs. A failed download lifts it anyway.
  */
 export default function Preloader() {
   const root = useRef<HTMLDivElement>(null);
@@ -18,6 +19,7 @@ export default function Preloader() {
   useEffect(() => {
     const el = root.current;
     if (!el) return;
+    el.dataset.preloader = "live"; // cancels the CSS failsafe: the script is running
     if (prefersReducedMotion()) {
       el.style.display = "none";
       markReady();
@@ -25,29 +27,34 @@ export default function Preloader() {
     }
     const unlock = lockScroll();
     const count = el.querySelector<HTMLElement>("[data-count]")!;
-    const bulbs = el.querySelectorAll<HTMLElement>("[data-bulb]");
     const counter = { value: 0 };
+    const setCount = () => { count.textContent = String(Math.round(counter.value)); };
+    const follow = gsap.quickTo(counter, "value", { duration: 0.5, ease: "power1.out", onUpdate: setCount });
+    const offProgress = onCoasterProgress(f => follow(Math.min(96, f * 100)));
+
     const tl = gsap.timeline();
-    tl.from("[data-logo]", { scale: 0.6, rotate: -12, opacity: 0, duration: 1, ease: "back.out(1.8)" }, 0)
-      .to(counter, {
-        value: 100,
-        duration: 1.9,
-        ease: "power2.inOut",
-        onUpdate: () => {
-          const v = Math.round(counter.value);
-          count.textContent = String(v);
-          bulbs.forEach((b, i) => b.toggleAttribute("data-on", v >= ((i + 1) / bulbs.length) * 100));
-        },
-      }, 0)
-      .add(() => {
-        unlock();
-        window.scrollTo(0, 0);
-        markReady();
-      })
-      .to("[data-logo]", { y: -60, scale: 1.15, opacity: 0, duration: 0.7, ease: "power3.in" }, ">-0.1")
-      .to(el, { clipPath: "inset(0% 0% 100% 0%)", duration: 1, ease: "expo.inOut" }, "<0.2")
-      .set(el, { display: "none" });
+    tl.from("[data-logo]", { scale: 0.6, rotate: -12, opacity: 0, duration: 1, ease: "back.out(1.8)" });
+
+    let cancelled = false;
+    const lift = () => {
+      if (cancelled) return;
+      offProgress();
+      tl.to(counter, { value: 100, duration: 0.5, ease: "power2.out", onUpdate: setCount }, Math.max(tl.time(), 0.6))
+        .to({}, { duration: 0.3 })
+        .add(() => {
+          unlock();
+          window.scrollTo(0, 0);
+          markReady();
+        })
+        .to("[data-logo], [data-count]", { y: -60, opacity: 0, duration: 0.6, ease: "power3.in", stagger: 0.05 })
+        .to(el, { clipPath: "inset(0% 0% 100% 0%)", duration: 1, ease: "expo.inOut" }, "<0.2")
+        .set(el, { display: "none" });
+    };
+    loadCoaster().then(lift, lift);
+
     return () => {
+      cancelled = true;
+      offProgress();
       tl.kill();
       unlock();
     };
@@ -60,23 +67,10 @@ export default function Preloader() {
       className="fixed inset-0 z-[200] flex flex-col justify-between bg-night p-(--gut) text-cream"
       style={{ clipPath: "inset(0% 0% 0% 0%)" }}
     >
-      <div className="eyebrow flex justify-between text-cream/60">
-        <span>Karachi · Hyderabad</span>
-        <span>4 PM – 12 AM</span>
-      </div>
-      <div className="flex flex-col items-center gap-8">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img data-logo src="/media/logo.png" alt="" className="w-[min(40vw,180px)] drop-shadow-[0_0_30px_rgba(255,201,60,0.35)]" />
-        <div className="flex gap-2.5" aria-hidden>
-          {["bg-red", "bg-yellow", "bg-green", "bg-blue", "bg-pink", "bg-orange", "bg-yellow", "bg-red"].map((c, i) => (
-            <span key={i} data-bulb className={`size-2.5 rounded-full ${c} opacity-20 transition-[opacity,box-shadow] duration-300 data-on:opacity-100 data-on:shadow-[0_0_14px_currentColor]`} />
-          ))}
-        </div>
-      </div>
-      <div className="flex items-end justify-between">
-        <span className="eyebrow text-cream/60">Fun for all</span>
-        <span data-count className="display text-[clamp(4rem,14vw,11rem)] tabular-nums text-yellow">0</span>
-      </div>
+      <span />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img data-logo src="/media/logo.png" alt="" className="mx-auto w-[min(40vw,180px)]" />
+      <span data-count className="display self-end text-[clamp(4rem,14vw,11rem)] tabular-nums">0</span>
     </div>
   );
 }

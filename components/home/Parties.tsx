@@ -13,15 +13,15 @@ const OCCASIONS = ["Birthdays", "School trips", "Family get-togethers", "Corpora
 
 /** Balloons and confetti, each drifting at its own depth as the section scrolls by. */
 const FLOATERS = [
-  { kind: "balloon", color: "#ffc93c", x: "8%", y: "12%", size: 90, depth: 1.4 },
-  { kind: "balloon", color: "#3b5bff", x: "82%", y: "8%", size: 120, depth: 2 },
-  { kind: "balloon", color: "#4cc35a", x: "70%", y: "62%", size: 80, depth: 1.1 },
-  { kind: "balloon", color: "#ff4fa3", x: "18%", y: "70%", size: 70, depth: 1.7 },
+  { kind: "balloon", color: "#fff6e5", x: "8%", y: "12%", size: 90, depth: 1.4 },
+  { kind: "balloon", color: "#fff6e5", x: "82%", y: "8%", size: 120, depth: 2 },
+  { kind: "balloon", color: "#fff6e5", x: "70%", y: "62%", size: 80, depth: 1.1 },
+  { kind: "balloon", color: "#fff6e5", x: "18%", y: "70%", size: 70, depth: 1.7 },
   { kind: "star", color: "#fff6e5", x: "45%", y: "6%", size: 36, depth: 0.8 },
-  { kind: "star", color: "#ffc93c", x: "92%", y: "44%", size: 28, depth: 1.2 },
+  { kind: "star", color: "#fff6e5", x: "92%", y: "44%", size: 28, depth: 1.2 },
   { kind: "star", color: "#fff6e5", x: "4%", y: "46%", size: 24, depth: 2.2 },
-  { kind: "dot", color: "#3b5bff", x: "58%", y: "86%", size: 22, depth: 1.5 },
-  { kind: "dot", color: "#ffc93c", x: "32%", y: "30%", size: 14, depth: 2.4 },
+  { kind: "dot", color: "#fff6e5", x: "58%", y: "86%", size: 22, depth: 1.5 },
+  { kind: "dot", color: "#fff6e5", x: "32%", y: "30%", size: 14, depth: 2.4 },
 ] as const;
 
 export default function Parties() {
@@ -71,9 +71,8 @@ export default function Parties() {
       </div>
 
       <div className="relative mx-auto flex max-w-6xl flex-col items-center text-center">
-        <p data-reveal className="eyebrow mb-8 text-yellow">05 / Events &amp; parties</p>
         <h2 data-reveal className="display text-[clamp(3.6rem,11vw,11rem)]">
-          Make it<br />an <span className="text-yellow">occasion.</span>
+          Make it<br />an occasion.
         </h2>
         <ul data-occasions className="mt-12 flex flex-wrap justify-center gap-3">
           {OCCASIONS.map(o => (

@@ -83,8 +83,8 @@ export default function Header() {
             <button type="button" onClick={() => setOpen(false)} aria-label="Close menu" className="grid size-11 place-items-center rounded-full border border-cream/30 text-xl">×</button>
           </div>
           <nav aria-label="Mobile" className="mt-10 flex flex-col gap-2">
-            {nav.map((item, i) => (
-              <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="display text-7xl" style={{ color: ["#ef3b39", "#ffc93c", "#4cc35a", "#3b5bff"][i % 4] }}>
+            {nav.map(item => (
+              <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="display text-7xl">
                 {item.label}
               </a>
             ))}

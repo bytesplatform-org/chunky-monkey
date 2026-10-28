@@ -1,7 +1,6 @@
 import { nav, site } from "@/data/site";
 
 const WORD = "Chunky Monkey";
-const LIT = ["hover:text-red", "hover:text-yellow", "hover:text-green", "hover:text-blue", "hover:text-pink", "hover:text-orange"];
 
 export default function Footer() {
   return (
@@ -23,12 +22,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* every letter lights up in a different colour on hover */}
-      <p aria-label={WORD} className="display mt-10 flex flex-wrap justify-center text-[clamp(4rem,15.5vw,18rem)] leading-[0.8] text-cream/10">
-        {WORD.split("").map((ch, i) => (
-          <span key={i} aria-hidden className={`transition-colors duration-200 hover:duration-0 ${LIT[i % LIT.length]} ${ch === " " ? "w-[0.25em]" : ""}`}>{ch}</span>
-        ))}
-      </p>
+      <p className="display mt-10 text-center text-[clamp(4rem,15.5vw,18rem)] leading-[0.8] text-cream/10">{WORD}</p>
 
       <div className="mt-10 flex flex-col justify-between gap-4 text-sm text-cream/50 sm:flex-row">
         <span>© 2026 Chunky Monkey. Fun for all.</span>

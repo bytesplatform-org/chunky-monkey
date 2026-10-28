@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
+import { Boogaloo, DM_Sans } from "next/font/google";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 import SmoothScroll from "@/components/gl/SmoothScroll";
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+// The headline face. Its variable keeps a fixed name, so swapping the font
+// only touches this file, never the stylesheet.
+const display = Boogaloo({
+  variable: "--font-heading",
   subsets: ["latin"],
-  axes: ["wdth", "opsz"],
+  weight: "400",
 });
 
 const dmSans = DM_Sans({
@@ -31,7 +33,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${dmSans.variable} antialiased`}>
+    <html lang="en" className={`${display.variable} ${dmSans.variable} antialiased`}>
       <body className="min-h-full">
         <SmoothScroll />
         {children}

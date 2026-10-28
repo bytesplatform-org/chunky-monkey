@@ -7,8 +7,6 @@ import { prefersReducedMotion } from "@/lib/animation/prefs";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const COLORS = ["text-red", "text-yellow", "text-green", "text-blue", "text-pink", "text-orange"];
-
 /** A tape of words that drifts on its own, speeds up and flips with scroll, and skews with the speed. */
 export default function Marquee({ items, className = "", speed = 60 }: { items: string[]; className?: string; speed?: number }) {
   const track = useRef<HTMLDivElement>(null);
@@ -46,8 +44,8 @@ export default function Marquee({ items, className = "", speed = 60 }: { items: 
 
   const row = items.map((item, i) => (
     <span key={i} className="flex items-center gap-[0.4em] pr-[0.4em]">
-      <span className={i % 2 ? "text-transparent [-webkit-text-stroke:2px_var(--color-cream)]" : `neon ${COLORS[i % COLORS.length]}`}>{item}</span>
-      <svg aria-hidden viewBox="0 0 24 24" className="size-[0.45em] text-yellow"><path fill="currentColor" d="M12 0l3 9h9l-7 5.5 2.7 9.5-7.7-6-7.7 6L7 14.5 0 9h9z" /></svg>
+      <span>{item}</span>
+      <span aria-hidden className="text-cream/30">/</span>
     </span>
   ));
 

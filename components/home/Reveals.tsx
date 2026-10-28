@@ -49,6 +49,9 @@ export default function Reveals() {
 /** Splits text into [data-word] spans for data-reveal-words. */
 export function Words({ text }: { text: string }) {
   return text.split(" ").map((word, i) => (
-    <span key={i} data-word className="inline-block">{word}&nbsp;</span>
+    <span key={i}>
+      {i > 0 && " "}
+      <span data-word className="inline-block">{word}</span>
+    </span>
   ));
 }

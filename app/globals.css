@@ -12,7 +12,7 @@
   --color-orange: #ff7a2f;
   --color-pink: #ff4fa3;
 
-  --font-display: var(--font-bricolage), "Arial Black", Impact, sans-serif;
+  --font-display: var(--font-heading), "Arial Black", Impact, sans-serif;
   --font-sans: var(--font-dm-sans), Arial, Helvetica, sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -38,29 +38,17 @@ body {
   color: var(--color-night);
 }
 
-/* Display type: tight, chunky, condensed. */
+/* Display type: Boogaloo, a single weight. */
 .display {
   font-family: var(--font-display);
-  font-weight: 800;
-  font-stretch: 75%;
-  line-height: 0.86;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: 0;
 }
 
 .eyebrow {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-/* Neon glow for lit words. Set the colour with `color`. */
-.neon {
-  text-shadow:
-    0 0 0.04em currentColor,
-    0 0 0.25em color-mix(in srgb, currentColor 60%, transparent),
-    0 0 0.8em color-mix(in srgb, currentColor 35%, transparent);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 /* Static stand-ins for WebGL scenes, hidden once the stage is running. */
@@ -74,11 +62,12 @@ html[data-cursor] button {
   cursor: none;
 }
 
-/* If the loader script never runs, don't trap the page under it. */
+/* If the loader script never runs, don't trap the page under it.
+   The component sets data-preloader="live" on mount, which cancels the timer. */
 @keyframes loader-failsafe {
   to { visibility: hidden; opacity: 0; }
 }
-[data-preloader] {
+[data-preloader]:not([data-preloader="live"]) {
   animation: loader-failsafe 0.4s 6s forwards;
 }
 
