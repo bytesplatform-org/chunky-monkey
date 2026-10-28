@@ -33,3 +33,13 @@ float roundedRect(vec2 p, vec2 size, float radius) {
   return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
 }
 `;
+
+/** Pass-through vertex shader for a 2×2 clip-space plane. */
+export const FULLSCREEN_VERTEX = /* glsl */ `
+varying vec2 vUv;
+
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position.xy, 0.0, 1.0);
+}
+`;

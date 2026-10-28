@@ -8,6 +8,7 @@ const StageContext = createContext<Stage | null>(null);
 /**
  * Mounts the page's one fixed, full-viewport canvas behind its children and
  * shares the stage with them. Sections add passes with useStagePass.
+ * While WebGL runs, <html data-gl> is set, so CSS can hide static fallbacks.
  */
 export default function GLStage({ children }: { children: ReactNode }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -16,10 +17,12 @@ export default function GLStage({ children }: { children: ReactNode }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const created = createStage(canvas);
+    const created = createStage(canvas, { maxDpr: 1.75 });
+    if (created) document.documentElement.setAttribute("data-gl", "");
     setStage(created);
     return () => {
       created?.dispose();
+      document.documentElement.removeAttribute("data-gl");
       setStage(null);
     };
   }, []);
@@ -29,7 +32,7 @@ export default function GLStage({ children }: { children: ReactNode }) {
       <canvas
         ref={canvasRef}
         aria-hidden
-        className="pointer-events-none fixed inset-0 -z-10 h-dvh w-full"
+        className="pointer-events-none fixed inset-0 z-0 h-lvh w-full"
       />
       {children}
     </StageContext.Provider>

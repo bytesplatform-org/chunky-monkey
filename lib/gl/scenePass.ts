@@ -37,7 +37,7 @@ export function createScenePass(opts: {
     },
     dispose() {
       scene.traverse(object => {
-        if (!(object instanceof THREE.Mesh)) return;
+        if (!(object instanceof THREE.Mesh || object instanceof THREE.Points)) return;
         object.geometry.dispose();
         const materials = Array.isArray(object.material) ? object.material : [object.material];
         materials.forEach(material => material.dispose());
