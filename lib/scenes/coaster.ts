@@ -1,6 +1,8 @@
 /**
- * The front-seat coaster ride as a stage pass. The exported ride is a 30 s
- * clip; we sample the seat's path once, then place the camera at whatever
+ * The front-seat coaster ride as a stage pass. The exported ride is a ~17 s
+ * clip (crest of the lift hill to the roll-out beside the station; the track
+ * the ride never visits is cut from the model); we sample the seat's path
+ * once, then place the camera at whatever
  * clip time `state.target` asks for. The camera eases toward it, so a
  * scroll-scrubbed target still rides smoothly, and the seat only shakes
  * while it's actually moving.
@@ -10,8 +12,8 @@ import * as THREE from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { Pass } from "@/lib/gl/stage";
 
-/** Clip seconds: just below the crest of the lift hill, and rolling back into the station. */
-export const RIDE = { from: 4.5, to: 29.2 };
+/** Clip seconds: just below the crest of the lift hill, and rolling out beside the station. */
+export const RIDE = { from: 0.4, to: 16.7 };
 
 /** A wider lens in portrait so the track still fills the frame. */
 const FOV = { landscape: 80, portrait: 95 };

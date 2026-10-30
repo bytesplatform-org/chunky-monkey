@@ -17,7 +17,7 @@ gsap.registerPlugin(ScrollTrigger);
 const TITLE = ["Fun", "for", "all."];
 
 /** How long the hero pins while the ride runs: the scroll distance of the whole ride. */
-const RIDE_LENGTH = "1100lvh";
+const RIDE_LENGTH = "750lvh";
 
 /** Share of the hero's scroll spent riding; the rest holds on the closing line. */
 const RIDE_SHARE = 0.92;
