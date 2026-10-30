@@ -74,3 +74,11 @@ html[data-cursor] button {
 @media (prefers-reduced-motion: reduce) {
   [data-preloader] { display: none; }
 }
+
+/* /park: each ride caption rises in as the tour reaches it */
+@keyframes park-caption-in {
+  from { opacity: 0; transform: translateY(16px); }
+}
+.park-caption {
+  animation: park-caption-in 0.6s var(--ease-out-expo) both;
+}
