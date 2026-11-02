@@ -1,61 +1,29 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, useAnimations, useGLTF } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { DRACO } from "./draco";
 import { rigPark, type Rig } from "./rigs";
-import { RIDES, captionAt, lookCurve, positionCurve } from "./tour";
+import Terrain, { groundHeight } from "./Terrain";
+import { RIDES, buildTour, captionAt, type Tour } from "./tour";
 
 const MODEL = "/models/park.glb";
-const DRACO = "https://www.gstatic.com/draco/versioned/decoders/1.5.7/";
 
 export type Mode = "tour" | "free";
 
-const SKY = { top: "#7fb4e4", horizon: "#ffd9b2", bottom: "#f3b38c" };
+/** A soft warm morning sky; the fog fades to it, so the edge of the land dissolves. */
+const SKY = "#f3e2cd";
 
-// ---- sky: a gradient dome that travels with the camera
+/** Free orbit's limits: never into the rides, never past the land, never under the ground, and pivoting within `reach` of the park. */
+const ORBIT = { min: 20, max: 180, polar: Math.PI / 2 - 0.06, reach: 30, clearance: 3 };
 
-const skyVertex = /* glsl */ `
-  varying vec3 vDir;
-  void main() {
-    vDir = normalize(position);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-
-const skyFragment = /* glsl */ `
-  uniform vec3 uTop;
-  uniform vec3 uHorizon;
-  uniform vec3 uBottom;
-  varying vec3 vDir;
-  void main() {
-    float h = vDir.y;
-    vec3 c = h > 0.0
-      ? mix(uHorizon, uTop, pow(smoothstep(0.0, 1.0, h), 0.6))
-      : mix(uHorizon, uBottom, smoothstep(0.0, 0.45, -h));
-    gl_FragColor = vec4(c, 1.0);
-    #include <colorspace_fragment>
-  }
-`;
-
-function Sky() {
-  const mesh = useRef<THREE.Mesh>(null);
-  const uniforms = useMemo(() => ({
-    uTop: { value: new THREE.Color(SKY.top) },
-    uHorizon: { value: new THREE.Color(SKY.horizon) },
-    uBottom: { value: new THREE.Color(SKY.bottom) },
-  }), []);
-  useFrame(({ camera }) => mesh.current?.position.copy(camera.position));
-  return (
-    <mesh ref={mesh} renderOrder={-1} raycast={() => null}>
-      <sphereGeometry args={[400, 32, 16]} />
-      <shaderMaterial vertexShader={skyVertex} fragmentShader={skyFragment} uniforms={uniforms} side={THREE.BackSide} depthWrite={false} />
-    </mesh>
-  );
-}
+/** Playback speed of the rides' own clips: OctopusSpin (10 s) and BalloonDrop (14 s) at 1. */
+const RIDE_SPEED = 1;
+const CLIPS = ["OctopusSpin", "BalloonDrop"];
 
 // ---- the park
 
@@ -66,11 +34,11 @@ type RideInfo = {
   view: { position: THREE.Vector3; target: THREE.Vector3 };
 };
 
-type Park = { rig: Rig; rides: Map<string, RideInfo> };
+type Park = { rig: Rig; rides: Map<string, RideInfo>; tour: Tour };
 
 /**
- * One-time setup on the loaded scene: shadows, per-ride materials and the ride
- * rigs. useGLTF caches the scene across mounts, so the result is kept on the
+ * One-time setup on the loaded scene: shadows, per-ride materials, the ride
+ * rigs and the tour. useGLTF caches the scene across mounts, so the result is kept on the
  * scene itself and never built twice.
  */
 function preparePark(scene: THREE.Object3D): Park {
@@ -102,22 +70,31 @@ function preparePark(scene: THREE.Object3D): Park {
       mesh.material = copy;
     });
 
+    root.traverse(o => { o.userData.pickable = true; });
+
     const box = new THREE.Box3().setFromObject(root);
     const centre = box.getCenter(new THREE.Vector3());
     const radius = box.getSize(new THREE.Vector3()).length() / 2;
     const out = new THREE.Vector3(centre.x, 0, centre.z);
     if (out.lengthSq() < 1) out.set(0, 0, 1);
     out.normalize();
+    // out from the park centre and up, at least as far as free orbit lets the camera come in
+    const target = centre.clone().setY(Math.min(centre.y, 3.5));
+    const offset = out.multiplyScalar(radius * 1.5 + 4).add(new THREE.Vector3(0, radius * 0.6 + 2.5, 0));
+    offset.setLength(Math.max(offset.length(), ORBIT.min + 2));
     rides.set(name, {
       materials: [...copies.values()],
-      view: {
-        position: centre.clone().addScaledVector(out, radius * 1.5 + 4).add(new THREE.Vector3(0, radius * 0.6 + 2.5, 0)),
-        target: centre.clone().setY(Math.min(centre.y, 3.5)),
-      },
+      view: { position: target.clone().add(offset), target },
     });
   }
 
-  const park: Park = { rig: rigPark(scene), rides };
+  // pointing only ever finds a ride: everything else opts out of raycasting
+  scene.traverse(o => {
+    const mesh = o as THREE.Mesh;
+    if (mesh.isMesh && !mesh.userData.pickable) mesh.raycast = () => {};
+  });
+
+  const park: Park = { rig: rigPark(scene), rides, tour: buildTour(scene) };
   scene.userData.park = park;
   return park;
 }
@@ -127,16 +104,22 @@ const rideOf = (o: THREE.Object3D | null) => {
   return null;
 };
 
-function Model({ hovered, onHover, onPick, onReady }: {
+function Model({ scene, animations, park, hovered, onHover, onPick }: {
+  scene: THREE.Group;
+  animations: THREE.AnimationClip[];
+  park: Park;
   hovered: string | null;
   onHover: (ride: string | null) => void;
   onPick: (ride: string) => void;
-  onReady: (rides: Map<string, RideInfo>) => void;
 }) {
-  const { scene } = useGLTF(MODEL, DRACO);
-  const park = useMemo(() => preparePark(scene), [scene]);
-
-  useEffect(() => onReady(park.rides), [park, onReady]);
+  // the octopus and the drop tower run on their own clips, bound to this
+  // same (uncloned) scene; nothing else moves their rotor or gondola
+  const { actions } = useAnimations(animations, scene);
+  useEffect(() => {
+    const playing = CLIPS.flatMap(n => actions[n] ?? []);
+    playing.forEach(a => a.reset().setLoop(THREE.LoopRepeat, Infinity).setEffectiveTimeScale(RIDE_SPEED).play());
+    return () => playing.forEach(a => a.stop());
+  }, [actions]);
 
   // a soft lift in each part's own colour, never on the lamps (already lit)
   useEffect(() => {
@@ -167,10 +150,11 @@ useGLTF.preload(MODEL, DRACO);
 
 // ---- camera: the scroll-scrubbed tour, or free orbit
 
-function CameraRig({ mode, focus, rides, onCaption }: {
+function CameraRig({ mode, focus, rides, tour: { positionCurve, lookCurve }, onCaption }: {
   mode: Mode;
   focus: { ride: string; at: number } | null;
-  rides: Map<string, RideInfo> | null;
+  rides: Map<string, RideInfo>;
+  tour: Tour;
   onCaption: (index: number) => void;
 }) {
   const camera = useThree(s => s.camera);
@@ -201,7 +185,14 @@ function CameraRig({ mode, focus, rides, onCaption }: {
   useLayoutEffect(() => {
     const t = tour.current;
     if (mode === "free") {
-      controls.current?.target.copy(look.current);
+      // pivot on what the tour was looking at, kept to the park when the tour is out over the land
+      const target = look.current.clone();
+      const flat = new THREE.Vector2(target.x, target.z);
+      if (flat.length() > ORBIT.reach) {
+        flat.setLength(ORBIT.reach);
+        target.set(flat.x, 2, flat.y);
+      }
+      controls.current?.target.copy(target);
       controls.current?.update();
       return;
     }
@@ -215,7 +206,7 @@ function CameraRig({ mode, focus, rides, onCaption }: {
 
   // a picked ride: glide the orbit over to it
   useEffect(() => {
-    const ride = focus && rides?.get(focus.ride);
+    const ride = focus && rides.get(focus.ride);
     const c = controls.current;
     if (!ride || !c || mode !== "free") return;
     const tweens = [
@@ -227,9 +218,13 @@ function CameraRig({ mode, focus, rides, onCaption }: {
     return () => { stop(); c.removeEventListener("start", stop); };
   }, [focus, rides, mode, camera]);
 
-  useFrame((_, dt) => {
+  useFrame((state, dt) => {
+    const cam = state.camera;
     if (mode === "free") {
       if (controls.current) look.current.copy(controls.current.target);
+      // the polar limit is relative to the pivot; the hills rise above it, so stay clear of them too
+      const ground = groundHeight(cam.position.x, cam.position.z);
+      if (ground !== null && cam.position.y < ground + ORBIT.clearance) cam.position.y = ground + ORBIT.clearance;
       setCaption(-1);
       return;
     }
@@ -248,9 +243,9 @@ function CameraRig({ mode, focus, rides, onCaption }: {
       scratch.position.lerpVectors(t.fromPosition, scratch.position, t.blend);
       scratch.look.lerpVectors(t.fromLook, scratch.look, t.blend);
     }
-    camera.position.copy(scratch.position);
+    cam.position.copy(scratch.position);
     look.current.copy(scratch.look);
-    camera.lookAt(scratch.look);
+    cam.lookAt(scratch.look);
     setCaption(t.blend < 1 ? -1 : captionAt(u));
   });
 
@@ -259,9 +254,9 @@ function CameraRig({ mode, focus, rides, onCaption }: {
       ref={controls}
       enableDamping
       dampingFactor={0.08}
-      minDistance={5}
-      maxDistance={95}
-      maxPolarAngle={Math.PI * 0.47}
+      minDistance={ORBIT.min}
+      maxDistance={ORBIT.max}
+      maxPolarAngle={ORBIT.polar}
     />
   ) : null;
 }
@@ -281,36 +276,45 @@ export default function ParkScene({ mode, hovered, focus, onHover, onPick, onCap
   onCaption: (index: number) => void;
   onReady: () => void;
 }) {
-  const [rides, setRides] = useState<Map<string, RideInfo> | null>(null);
-  const handleReady = useCallback((r: Map<string, RideInfo>) => { setRides(r); onReady(); }, [onReady]);
+  const { scene, animations } = useGLTF(MODEL, DRACO);
+  const park = useMemo(() => preparePark(scene), [scene]);
+  useEffect(() => onReady(), [park, onReady]);
 
   return (
     <>
-      <Sky />
-      <fog attach="fog" args={[SKY.horizon, 70, 230]} />
-      <hemisphereLight args={["#dcedff", "#f0c49a", 1.25]} />
+      <color attach="background" args={[SKY]} />
+      <fog attach="fog" args={[SKY, 120, 320]} />
+      {/* a bright, low morning sun; the shadow camera spans ~160 m around the park */}
+      <hemisphereLight args={["#dbeaf7", "#8a9a72", 1.05]} />
+      <ambientLight intensity={0.18} />
       <directionalLight
-        position={[28, 40, 18]}
-        color="#fff0d6"
-        intensity={2.4}
+        position={[110, 150, 70]}
+        color="#fff1dc"
+        intensity={2.3}
         castShadow
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-32}
-        shadow-camera-right={32}
-        shadow-camera-top={32}
-        shadow-camera-bottom={-32}
-        shadow-camera-near={1}
-        shadow-camera-far={120}
-        shadow-bias={-0.0004}
-        shadow-normalBias={0.035}
+        shadow-camera-left={-160}
+        shadow-camera-right={160}
+        shadow-camera-top={160}
+        shadow-camera-bottom={-160}
+        shadow-camera-near={10}
+        shadow-camera-far={480}
+        shadow-bias={-0.0005}
+        shadow-normalBias={0.12}
       />
       <Model
+        scene={scene}
+        animations={animations}
+        park={park}
         hovered={hovered}
         onHover={onHover}
         onPick={onPick}
-        onReady={handleReady}
       />
-      <CameraRig mode={mode} focus={focus} rides={rides} onCaption={onCaption} />
+      {/* the land streams in on its own, behind the park */}
+      <Suspense fallback={null}>
+        <Terrain />
+      </Suspense>
+      <CameraRig mode={mode} focus={focus} rides={park.rides} tour={park.tour} onCaption={onCaption} />
     </>
   );
 }

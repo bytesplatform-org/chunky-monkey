@@ -2,7 +2,9 @@
  * Ride animation for park.glb. The model ships every ride as a flat list of
  * parts under one node (spokes beside gondolas beside the base), so each rig
  * regroups the moving parts under pivots at load, keeping their world
- * placement, then drives the pivots each frame from the clock.
+ * placement, then drives the pivots each frame from the clock. The octopus
+ * and the drop tower aren't here: they ship their own clips (OctopusSpin,
+ * BalloonDrop), played in ParkScene.
  */
 
 import * as THREE from "three";
@@ -49,89 +51,11 @@ function ferrisWheel(root: THREE.Object3D): Rig {
   };
 }
 
-/** Platform and canopy turn; each horse rides up and down its pole. */
-function carousel(root: THREE.Object3D): Rig {
-  const horses: THREE.Group[] = [];
-  for (let i = 0; ; i++) {
-    const members = parts(root, new RegExp(`^CR_(HBody|HHead|HNeck|Saddle)_${i}$|^CR_HLeg_${i}_`));
-    if (!members.length) break;
-    horses.push(pivot(root, new THREE.Vector3(), members));
-  }
-  const spin = pivot(root, new THREE.Vector3(), root.children.filter(c => !/^CR_(Base|Step)/.test(c.name)));
-
-  return time => {
-    spin.rotation.y = time * 0.35;
-    horses.forEach((h, i) => { h.position.y = Math.sin(time * 1.8 + i * Math.PI) * 0.16; });
-  };
-}
-
-/**
- * The arms turn around the body, each lifting and dropping in sequence, and
- * every car spins on its strut and stays level while its arm tilts.
- */
-function octopus(root: THREE.Object3D): Rig {
-  root.updateMatrixWorld(true);
-  const arms = parts(root, /^Octo_Arm_\d+$/);
-  const bearings = arms.map(a => {
-    const c = root.worldToLocal(new THREE.Box3().setFromObject(a).getCenter(new THREE.Vector3()));
-    return c.setY(0).normalize();
-  });
-  const taken = new Set<number>();
-
-  const rotor = new THREE.Group();
-  root.add(rotor);
-
-  const legs: { pivot: THREE.Group; car: THREE.Group; axis: THREE.Vector3 }[] = [];
-  for (let i = 0; ; i++) {
-    const carBody = named(root, `Octo_Car_${i}`);
-    if (!carBody) break;
-    const dir = new THREE.Vector3(carBody.position.x, 0, carBody.position.z).normalize();
-
-    // the free arm whose middle sits closest to this car's bearing
-    let best = -1;
-    bearings.forEach((b, k) => {
-      if (!taken.has(k) && (best < 0 || b.dot(dir) > bearings[best].dot(dir))) best = k;
-    });
-    if (best < 0) break;
-    taken.add(best);
-
-    // the car hangs from the top of its strut, where the arm meets it, so it turns and levels about that joint
-    const strut = named(root, `Octo_Strut_${i}`)!;
-    const joint = strut.position.clone().add(new THREE.Vector3(0, 0.35, 0));
-    const car = pivot(root, joint, parts(root, new RegExp(`^Octo_(Car|Seat|SeatBack|LapBar|Stripe|Strut)_${i}$`)));
-    const shoulder = dir.clone().multiplyScalar(1.45).setY(2.6);
-    const leg = pivot(root, shoulder, [arms[best], ...parts(root, new RegExp(`^Octo_Cup_${i}_`)), car]);
-    rotor.attach(leg);
-    legs.push({ pivot: leg, car, axis: dir.clone().cross(UP).normalize() });
-  }
-
-  const qa = new THREE.Quaternion(), qb = new THREE.Quaternion();
-  return time => {
-    rotor.rotation.y = time * 0.45;
-    legs.forEach(({ pivot: leg, car, axis }, i) => {
-      const lift = (0.5 + 0.5 * Math.sin(time * 0.9 + i * (Math.PI / 2))) * 0.26;
-      leg.quaternion.setFromAxisAngle(axis, lift);
-      qa.setFromAxisAngle(axis, -lift);
-      qb.setFromAxisAngle(UP, time * 1.1 + i);
-      car.quaternion.multiplyQuaternions(qa, qb);
-    });
-  };
-}
-
 /** Top, chains and seats turn around the column, with a slow wobble. */
 function swingRide(root: THREE.Object3D): Rig {
   const spinner = pivot(root, new THREE.Vector3(), parts(root, /^SW_(Top|Ring|Light|Chain|Seat|Back)/));
   return time => {
     spinner.rotation.set(Math.sin(time * 0.5) * 0.035, time * 0.8, Math.cos(time * 0.4) * 0.035);
-  };
-}
-
-/** The car climbs the column, turning slowly, and sinks back down. */
-function balloonTower(root: THREE.Object3D): Rig {
-  const lift = pivot(root, new THREE.Vector3(), parts(root, /^DT_(Car|CarBand|Seat)/));
-  return time => {
-    lift.position.y = (0.5 - 0.5 * Math.cos(time * 0.45)) * 3.6;
-    lift.rotation.y = time * 0.3;
   };
 }
 
@@ -202,10 +126,7 @@ function rollerCoaster(root: THREE.Object3D): Rig {
 
 const RIGS: Record<string, (root: THREE.Object3D) => Rig> = {
   Ferris_Wheel: ferrisWheel,
-  Carousel: carousel,
-  Octopus_Ride: octopus,
   SwingRide: swingRide,
-  BalloonTower: balloonTower,
   RollerCoaster: rollerCoaster,
 };
 
