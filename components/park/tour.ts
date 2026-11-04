@@ -19,7 +19,7 @@ const anchor = (scene: THREE.Object3D, name: string, fallback: THREE.Vector3) =>
 };
 
 /**
- * The stops. The octopus orbit and the drop tower shots are offsets from
+ * The stops. The octopus orbit, the drop tower and bumper car shots are offsets from
  * those rides as they sit in the loaded model, so they follow the rides
  * when the model moves them.
  */
@@ -28,11 +28,14 @@ function stops(scene: THREE.Object3D): Stop[] {
   const octopus = anchor(scene, "Octopus_Ride", v(-9, 0, 14));
   const tower = anchor(scene, "BalloonTower", v(-14.5, 0, 0));
   const ferris = anchor(scene, "Ferris_Wheel", v(8.25, 0, -14.3));
+  const bumper = anchor(scene, "BumperCars", v(14, 0, 0));
   const octo = (x: number, y: number, z: number) => octopus.clone().add(v(x, y, z));
   const near = (x: number, y: number, z: number) => tower.clone().add(v(x, y, z));
+  const pad = (x: number, y: number, z: number) => bumper.clone().add(v(x, y, z));
   const OCTOPUS = octo(0, 1.8, 0);
   const TOWER = near(0, 7, 0);
   const FERRIS = ferris.clone().setY(6.6);
+  const BUMPER = pad(0, 0.7, 0);
 
   return [
     [v(34, 28, 40), v(0, 2, 0)], //  0 hero
@@ -55,12 +58,15 @@ function stops(scene: THREE.Object3D): Stop[] {
     [v(21, 10, -19), FERRIS], // 17
     [v(19.5, 9, -4.5), FERRIS], // 18
     [v(6.5, 10, -1.5), FERRIS], // 19
-    [v(22, 20, 18), v(2, 2, 2)], // 20 up to the hero shot
+    [pad(-4.5, 3, 8.5), BUMPER], // 20 down to the bumper cars, low enough to see under the roof
+    [pad(0, 2.9, 10), BUMPER], // 21
+    [pad(5, 7, 9.5), BUMPER], // 22 up over the trees
+    [v(22, 20, 18), v(2, 2, 2)], // 23 up to the hero shot
   ];
 }
 
 /** stop count, fixed: the captions are placed by stop index */
-const STOP_COUNT = 21;
+const STOP_COUNT = 24;
 
 export type Tour = { positionCurve: THREE.CatmullRomCurve3; lookCurve: THREE.CatmullRomCurve3 };
 
@@ -83,7 +89,8 @@ export const CAPTIONS: Caption[] = [
   { title: "The Octopus", line: "Eight arms spinning round the hub.", from: at(4.5), to: at(8.4) },
   { title: "Drop Tower", line: "A slow climb, then the drop.", from: at(8.6), to: at(10.6) },
   { title: "Roller Coaster", line: "Seventy metres of track and one loop.", from: at(11), to: at(14.2) },
-  { title: "Ferris Wheel", line: "Fourteen gondolas over the whole park.", from: at(14.6), to: at(19.4) },
+  { title: "Ferris Wheel", line: "Fourteen gondolas over the whole park.", from: at(14.6), to: at(19.2) },
+  { title: "Bumper Cars", line: "Eight cars, one small floor.", from: at(19.8), to: at(21.8) },
 ];
 
 /** index into CAPTIONS for loop position `u`, or -1 between rides */
@@ -95,5 +102,6 @@ export const RIDES: Record<string, string> = {
   RollerCoaster: "Roller Coaster",
   Ferris_Wheel: "Ferris Wheel",
   BalloonTower: "Drop Tower",
+  BumperCars: "Bumper Cars",
   SwingRide: "Swing Ride",
 };

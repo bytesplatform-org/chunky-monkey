@@ -2,9 +2,9 @@
  * Ride animation for park.glb. The model ships every ride as a flat list of
  * parts under one node (spokes beside gondolas beside the base), so each rig
  * regroups the moving parts under pivots at load, keeping their world
- * placement, then drives the pivots each frame from the clock. The octopus
- * and the drop tower aren't here: they ship their own clips (OctopusSpin,
- * BalloonDrop), played in ParkScene.
+ * placement, then drives the pivots each frame from the clock. The octopus,
+ * the drop tower and the bumper cars aren't here: they ship their own clips,
+ * played in ParkScene.
  */
 
 import * as THREE from "three";

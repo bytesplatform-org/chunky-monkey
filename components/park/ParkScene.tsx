@@ -21,9 +21,8 @@ const SKY = "#f3e2cd";
 /** Free orbit's limits: never into the rides, never past the land, never under the ground, and pivoting within `reach` of the park. */
 const ORBIT = { min: 20, max: 180, polar: Math.PI / 2 - 0.06, reach: 30, clearance: 3 };
 
-/** Playback speed of the rides' own clips: OctopusSpin (10 s) and BalloonDrop (14 s) at 1. */
+/** Playback speed of every clip in the model. */
 const RIDE_SPEED = 1;
-const CLIPS = ["OctopusSpin", "BalloonDrop"];
 
 // ---- the park
 
@@ -112,14 +111,14 @@ function Model({ scene, animations, park, hovered, onHover, onPick }: {
   onHover: (ride: string | null) => void;
   onPick: (ride: string) => void;
 }) {
-  // the octopus and the drop tower run on their own clips, bound to this
-  // same (uncloned) scene; nothing else moves their rotor or gondola
+  // the rides that ship their own clips run on them, bound to this same
+  // (uncloned) scene; every clip in the model plays, so new ones just work
   const { actions } = useAnimations(animations, scene);
   useEffect(() => {
-    const playing = CLIPS.flatMap(n => actions[n] ?? []);
+    const playing = animations.flatMap(c => actions[c.name] ?? []);
     playing.forEach(a => a.reset().setLoop(THREE.LoopRepeat, Infinity).setEffectiveTimeScale(RIDE_SPEED).play());
     return () => playing.forEach(a => a.stop());
-  }, [actions]);
+  }, [actions, animations]);
 
   // a soft lift in each part's own colour, never on the lamps (already lit)
   useEffect(() => {
