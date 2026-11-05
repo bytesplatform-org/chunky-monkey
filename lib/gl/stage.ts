@@ -26,6 +26,8 @@ export type Pass = {
   /** called once up front and on every resize */
   resize?(width: number, height: number, dpr: number): void;
   render(renderer: THREE.WebGLRenderer, frame: Frame): void;
+  /** true while this pass needs the canvas where it belongs, over the whole screen */
+  busy?(): boolean;
   dispose(): void;
 };
 
@@ -33,6 +35,14 @@ export type Stage = {
   renderer: THREE.WebGLRenderer;
   /** adds a pass (drawn after the ones already added); returns its removal */
   add(pass: Pass): () => void;
+  /**
+   * Lends the canvas to `host`, laid over its contents, unless a pass needs it
+   * here. `onReclaim` runs if a pass takes it back. The drawing buffer keeps its
+   * size, so no pass has to resize for a loan.
+   */
+  lendCanvas(host: HTMLElement, onReclaim: () => void): boolean;
+  /** Puts a lent canvas back. */
+  returnCanvas(): void;
   dispose(): void;
 };
 
@@ -66,6 +76,14 @@ export function createStage(canvas: HTMLCanvasElement, opts: StageOptions = {}):
   let needsResize = true;
   let time = 0;
   let contextLost = false;
+  let loan: { home: ParentNode; next: ChildNode | null; onReclaim: () => void } | null = null;
+
+  const returnCanvas = () => {
+    if (!loan) return;
+    loan.home.insertBefore(canvas, loan.next);
+    canvas.style.cssText = "";
+    loan = null;
+  };
 
   const measure = () => { needsResize = true; };
   window.addEventListener("resize", measure, { passive: true });
@@ -74,14 +92,25 @@ export function createStage(canvas: HTMLCanvasElement, opts: StageOptions = {}):
 
   const tick = (_time: number, deltaMs: number) => {
     if (contextLost || document.hidden) return;
-    if (needsResize) {
+    if (loan && passes.some(pass => pass.busy?.())) {
+      const { onReclaim } = loan;
+      returnCanvas();
+      onReclaim();
+    }
+    if (needsResize && !loan) {
       needsResize = false;
-      width = Math.max(1, canvas.clientWidth);
-      height = Math.max(1, canvas.clientHeight);
-      dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
-      renderer.setPixelRatio(dpr);
-      renderer.setSize(width, height, false);
-      passes.forEach(pass => pass.resize?.(width, height, dpr));
+      const w = Math.max(1, canvas.clientWidth);
+      const h = Math.max(1, canvas.clientHeight);
+      const d = Math.min(window.devicePixelRatio || 1, maxDpr);
+      // a canvas coming back from a loan reads as a resize: nothing actually changed
+      if (w !== width || h !== height || d !== dpr) {
+        width = w;
+        height = h;
+        dpr = d;
+        renderer.setPixelRatio(dpr);
+        renderer.setSize(width, height, false);
+        passes.forEach(pass => pass.resize?.(width, height, dpr));
+      }
     }
     const dt = Math.min(deltaMs, 50) / 1000;
     time += dt;
@@ -117,7 +146,19 @@ export function createStage(canvas: HTMLCanvasElement, opts: StageOptions = {}):
         pass.dispose();
       };
     },
+    lendCanvas(host, onReclaim) {
+      if (passes.some(pass => pass.busy?.())) return false;
+      if (loan) returnCanvas();
+      const home = canvas.parentNode;
+      if (!home) return false;
+      loan = { home, next: canvas.nextSibling, onReclaim };
+      canvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;z-index:auto";
+      host.append(canvas);
+      return true;
+    },
+    returnCanvas,
     dispose() {
+      returnCanvas();
       gsap.ticker.remove(tick);
       window.removeEventListener("resize", measure);
       observer.disconnect();

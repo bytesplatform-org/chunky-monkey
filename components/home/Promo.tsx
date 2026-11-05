@@ -1,5 +1,5 @@
 import { site } from "@/data/site";
-import ShaderImage from "./ShaderImage";
+import LiquidImage from "./LiquidImage";
 import CtaLink from "./CtaLink";
 import { Squiggle } from "./Deco";
 
@@ -21,7 +21,7 @@ export default function Promo() {
           </div>
         </div>
         <div data-reveal className="relative mx-auto w-full max-w-[520px]">
-          <ShaderImage src="/media/offer.jpg" alt="Reload Rs. 1000 and get a Rs. 300 bonus, valid Monday to Thursday" cursor="Offer" className="slab aspect-square rotate-2 rounded-[32px] transition-transform duration-300 [--lift:10px] hover:-rotate-1" sizes="(min-width: 1024px) 38vw, 90vw" />
+          <LiquidImage src="/media/offer.jpg" alt="Reload Rs. 1000 and get a Rs. 300 bonus, valid Monday to Thursday" cursor="Offer" className="slab aspect-square rotate-2 rounded-[32px] transition-transform duration-300 [--lift:10px] hover:-rotate-1" sizes="(min-width: 1024px) 38vw, 90vw" />
         </div>
       </div>
     </section>

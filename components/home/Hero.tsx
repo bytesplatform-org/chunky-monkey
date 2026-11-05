@@ -65,6 +65,7 @@ export default function Hero() {
       const remove = stage.add({
         resize: arcade.pass.resize,
         render: (renderer, frame) => { if (visible || parkTour.active) arcade.pass.render(renderer, frame); },
+        busy: () => visible || parkTour.active,
         dispose: arcade.pass.dispose,
       });
 

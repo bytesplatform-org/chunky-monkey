@@ -1,5 +1,5 @@
 import { parks } from "@/data/site";
-import ShaderImage from "./ShaderImage";
+import LiquidImage from "./LiquidImage";
 import CtaLink from "./CtaLink";
 import { Star } from "./Deco";
 
@@ -13,7 +13,7 @@ export default function Parks() {
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <article data-reveal className="slab relative overflow-hidden rounded-[32px] text-cream">
-          <ShaderImage src="/media/park.jpg" alt="Chunky Monkey DHA Phase IV entrance at dusk" edge="#ffc93c" cursor="Visit" className="aspect-[4/5] size-full sm:aspect-[4/3] lg:aspect-auto lg:min-h-[600px]" sizes="(min-width: 1024px) 60vw, 100vw" />
+          <LiquidImage src="/media/park.jpg" alt="Chunky Monkey DHA Phase IV entrance at dusk" cursor="Visit" className="aspect-[4/5] size-full sm:aspect-[4/3] lg:aspect-auto lg:min-h-[600px]" sizes="(min-width: 1024px) 60vw, 100vw" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-night/90 via-night/10 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-3 p-[clamp(20px,3vw,40px)]">
             <span className="eyebrow">{flagship.area}</span>

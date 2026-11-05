@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createStage, type Pass, type Stage } from "@/lib/gl/stage";
 
 const StageContext = createContext<Stage | null>(null);
@@ -26,6 +26,9 @@ export default function GLStage({ children }: { children: ReactNode }) {
       setStage(null);
     };
   }, []);
+
+  // React removes the canvas from where it put it: have it home before that, not just before the effect above
+  useLayoutEffect(() => () => stage?.returnCanvas(), [stage]);
 
   return (
     <StageContext.Provider value={stage}>

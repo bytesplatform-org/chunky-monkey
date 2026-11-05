@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { rides, site } from "@/data/site";
-import ShaderImage from "./ShaderImage";
+import LiquidImage from "./LiquidImage";
 import CtaLink from "./CtaLink";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -78,7 +78,7 @@ export default function Rides() {
           {rides.map((ride, i) => (
             <article key={ride.name} data-ride className="w-[clamp(260px,min(27vw,41lvh),420px)] shrink-0 snap-start">
               <div className={`slab rounded-[28px] p-3 transition-transform duration-300 hover:-translate-y-2 hover:rotate-1 ${TONES[i % TONES.length]}`}>
-                <ShaderImage
+                <LiquidImage
                   src={ride.image}
                   alt={`${ride.name} ride at Chunky Monkey`}
                   sizes="(min-width: 1024px) 27vw, 70vw"

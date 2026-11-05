@@ -1,142 +1,167 @@
 /**
- * The liquid hover for plain photos. A page can hold only about 16 WebGL
- * contexts and has more photos than that, but only one or two are ever under
- * the cursor or still settling: a few canvases are kept and lent out, laid over
- * the <img> for as long as it's moving. The photo itself stays a plain <img>.
+ * The liquid hover, for every photo on the page, on the page's one canvas. A
+ * photo is a plain <img> until the cursor reaches it; then the stage lends its
+ * canvas to the photo's frame, so whatever sits over or around the photo stays
+ * over or around it, and takes it back once the photo has settled.
  */
 
 import * as THREE from "three";
-import gsap from "gsap";
 import { isCoarsePointer, prefersReducedMotion } from "@/lib/animation/prefs";
+import { FULLSCREEN_VERTEX } from "@/lib/shaders/noise";
 import { liquidImageFragment } from "@/lib/shaders/liquidImage";
+import type { Stage } from "./stage";
 import { createLiquidField } from "./liquidField";
-import { createShaderCanvas } from "./shaderCanvas";
 
-/** Enough for one photo under the cursor and a couple still settling behind it. */
-const CANVASES = 3;
+/** How quickly the push-in eases (per second), normally and when another photo is waiting for the canvas. */
+const EASE = 3.5;
+const EASE_HANDOFF = 22;
+/** How much faster the flow dies away when another photo is waiting. */
+const SETTLE_HANDOFF = 9;
 
-type Slot = {
-  canvas: HTMLCanvasElement;
-  field: ReturnType<typeof createLiquidField>;
-  uniforms: { uTexture: THREE.IUniform; uFlow: THREE.IUniform; uImageRes: THREE.IUniform; uHover: THREE.IUniform };
-  owner: HTMLElement | null;
-  hovered: boolean;
-  /** when it was last lent, to pick the one to take back if all are out */
-  lentAt: number;
+type Photo = {
+  el: HTMLElement;
+  /** the picture at its real size: a responsive <img> reports one scaled for the screen, which a texture can't use */
+  source: HTMLImageElement;
 };
 
-const slots: Slot[] = [];
-
-function release(slot: Slot) {
-  gsap.killTweensOf(slot.uniforms.uHover);
-  slot.canvas.remove();
-  (slot.uniforms.uTexture.value as THREE.Texture | null)?.dispose();
-  slot.uniforms.uTexture.value = null;
-  slot.owner = null;
-  slot.hovered = false;
-}
-
-function createSlot(): Slot | null {
-  const canvas = document.createElement("canvas");
-  canvas.setAttribute("aria-hidden", "true");
-  canvas.className = "pointer-events-none absolute inset-0 size-full";
+function createLiquid(stage: Stage) {
   const field = createLiquidField();
   const uniforms = {
-    uTexture: { value: null },
+    uTexture: { value: null as THREE.Texture | null },
     uFlow: { value: field.texture },
     uImageRes: { value: new THREE.Vector2(1, 1) },
+    uFrame: { value: new THREE.Vector2(1, 1) },
     uHover: { value: 0 },
   };
-  const slot: Slot = { canvas, field, uniforms, owner: null, hovered: false, lentAt: 0 };
-  try {
-    createShaderCanvas(canvas, {
-      fragmentShader: liquidImageFragment,
-      uniforms,
-      animate: false,
-      onFrame: (_time, deltaMs) => {
-        if (!slot.owner) return;
-        field.settle(deltaMs / 1000);
-        if (!slot.hovered && !field.moving && uniforms.uHover.value < 0.005) release(slot);
-      },
-    });
-  } catch {
-    field.dispose();
-    return null;
-  }
-  return slot;
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const material = new THREE.ShaderMaterial({ vertexShader: FULLSCREEN_VERTEX, fragmentShader: liquidImageFragment, uniforms, depthTest: false, depthWrite: false });
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+  quad.frustumCulled = false;
+  scene.add(quad);
+
+  let current: Photo | null = null;
+  let waiting: Photo | null = null;
+  let hovered = false;
+
+  const letGo = () => {
+    uniforms.uTexture.value?.dispose();
+    uniforms.uTexture.value = null;
+    current = null;
+    hovered = false;
+  };
+
+  const take = (photo: Photo) => {
+    if (!stage.lendCanvas(photo.el, letGo)) return false;
+    const texture = new THREE.Texture(photo.source);
+    texture.colorSpace = THREE.NoColorSpace;
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+    texture.needsUpdate = true;
+    field.reset();
+    uniforms.uTexture.value = texture;
+    uniforms.uImageRes.value.set(photo.source.naturalWidth, photo.source.naturalHeight);
+    uniforms.uHover.value = 0;
+    current = photo;
+    hovered = true;
+    return true;
+  };
+
+  stage.add({
+    render(renderer, frame) {
+      if (current) {
+        // another photo is waiting: wrap this one up quickly
+        field.settle(frame.dt * (waiting ? SETTLE_HANDOFF : 1));
+        uniforms.uHover.value = THREE.MathUtils.damp(uniforms.uHover.value, hovered ? 1 : 0, waiting ? EASE_HANDOFF : EASE, frame.dt);
+        if (!hovered && !field.moving && uniforms.uHover.value < 0.005) {
+          letGo();
+          stage.returnCanvas();
+        }
+      }
+      if (!current && waiting && take(waiting)) waiting = null;
+      if (!current) return;
+      uniforms.uFrame.value.set(current.el.clientWidth, current.el.clientHeight);
+      const toneMapping = renderer.toneMapping;
+      renderer.toneMapping = THREE.NoToneMapping;
+      renderer.render(scene, camera);
+      renderer.toneMapping = toneMapping;
+    },
+    dispose() {
+      letGo();
+      quad.geometry.dispose();
+      material.dispose();
+      field.dispose();
+    },
+  });
+
+  return {
+    enter(photo: Photo) {
+      if (current === photo) {
+        hovered = true;
+        waiting = null;
+      } else {
+        if (current) hovered = false;
+        waiting = photo;
+      }
+    },
+    drag(photo: Photo, x: number, y: number, dx: number, dy: number, aspect: number) {
+      if (current === photo) field.drag(x, y, dx, dy, aspect);
+      else if (waiting !== photo) this.enter(photo); // it was taken back while the cursor stayed here
+    },
+    leave(photo: Photo) {
+      if (waiting === photo) waiting = null;
+      if (current === photo) hovered = false;
+    },
+    forget(photo: Photo) {
+      if (waiting === photo) waiting = null;
+      if (current === photo) {
+        letGo();
+        stage.returnCanvas();
+      }
+    },
+  };
 }
 
-/** A free canvas, a new one while there's room, or else the one lent out longest ago. */
-function borrow(): Slot | null {
-  const free = slots.find(s => !s.owner);
-  if (free) return free;
-  if (slots.length < CANVASES) {
-    const slot = createSlot();
-    if (slot) slots.push(slot);
-    return slot;
-  }
-  const oldest = slots.reduce((a, b) => (a.lentAt < b.lentAt ? a : b));
-  release(oldest);
-  return oldest;
-}
+const liquids = new WeakMap<Stage, ReturnType<typeof createLiquid>>();
 
 /** Makes the photo `img` inside `el` flow under the cursor. Returns the teardown. */
-export function attachLiquid(el: HTMLElement, img: HTMLImageElement) {
+export function attachLiquid(stage: Stage, el: HTMLElement, img: HTMLImageElement) {
   if (isCoarsePointer() || prefersReducedMotion()) return () => {};
-  let slot: Slot | null = null;
-  let last: { x: number; y: number } | null = null;
-  const mine = () => (slot?.owner === el ? slot : null);
+  const liquid = liquids.get(stage) ?? createLiquid(stage);
+  liquids.set(stage, liquid);
 
-  // a responsive <img> reports a size scaled for the screen, not its pixels: a texture needs the real ones
-  let source: HTMLImageElement | null = null;
+  let photo: Photo | null = null;
   let over = false;
+  let last: { x: number; y: number } | null = null;
 
   const onEnter = () => {
     over = true;
     last = null;
     if (!img.complete || !img.naturalWidth) return;
-    if (!source) {
-      source = new Image();
-      source.onload = () => { if (over) onEnter(); };
+    if (!photo) {
+      const source = new Image();
+      const loaded = { el, source };
+      source.onload = () => {
+        photo = loaded;
+        if (over) liquid.enter(loaded);
+      };
       source.src = img.currentSrc;
+      return;
     }
-    if (!source.complete || !source.naturalWidth) return;
-    const held = mine() ?? borrow();
-    slot = held;
-    if (!held) return;
-    if (held.owner !== el) {
-      const texture = new THREE.Texture(source);
-      texture.colorSpace = THREE.NoColorSpace;
-      texture.generateMipmaps = false;
-      texture.minFilter = THREE.LinearFilter;
-      texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
-      texture.needsUpdate = true;
-      held.field.reset();
-      held.uniforms.uTexture.value = texture;
-      (held.uniforms.uImageRes.value as THREE.Vector2).set(source.naturalWidth, source.naturalHeight);
-      held.uniforms.uHover.value = 0;
-      held.owner = el;
-      held.lentAt = performance.now();
-      el.append(held.canvas);
-    }
-    held.hovered = true;
-    gsap.to(held.uniforms.uHover, { value: 1, duration: 0.8, ease: "power2.out", overwrite: true });
+    liquid.enter(photo);
   };
   const onMove = (e: PointerEvent) => {
-    const held = mine();
-    if (!held) return void (over || onEnter());
+    if (!photo) return;
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width;
     const y = 1 - (e.clientY - r.top) / r.height;
-    if (last) held.field.drag(x, y, x - last.x, y - last.y, r.width / Math.max(r.height, 1));
+    if (last) liquid.drag(photo, x, y, x - last.x, y - last.y, r.width / Math.max(r.height, 1));
     last = { x, y };
   };
   const onLeave = () => {
     over = false;
-    const held = mine();
-    if (!held) return;
-    held.hovered = false;
-    gsap.to(held.uniforms.uHover, { value: 0, duration: 0.8, ease: "power2.out", overwrite: true });
+    if (photo) liquid.leave(photo);
   };
 
   el.addEventListener("pointerenter", onEnter);
@@ -146,7 +171,6 @@ export function attachLiquid(el: HTMLElement, img: HTMLImageElement) {
     el.removeEventListener("pointerenter", onEnter);
     el.removeEventListener("pointermove", onMove);
     el.removeEventListener("pointerleave", onLeave);
-    const held = mine();
-    if (held) release(held);
+    if (photo) liquid.forget(photo);
   };
 }
