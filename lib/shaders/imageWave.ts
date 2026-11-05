@@ -7,10 +7,12 @@ import { NOISE } from "./noise";
  *
  *   uReveal    0→1 dissolves the photo in from the bottom along a noisy,
  *              neon-lit edge.
- *   uVelocity  page scroll speed (-1..1) bends the image and splits RGB.
+ *   uVelocity  page scroll speed (-1..1) bends the image and splits RGB while it moves.
  *   uParallax  -1..1 from the element's place in the viewport; slides the
  *              photo inside its frame.
- *   uHover     0..1 with uPointer: a ripple around the cursor and a zoom.
+ *   uHover     0..1: a slow push in on the photo.
+ *   uFlow      a smooth flow (see liquidField.ts): the cursor drags the photo
+ *              like thick liquid.
  *
  * Output is premultiplied (the canvas is transparent until revealed).
  */
@@ -26,7 +28,7 @@ uniform float uReveal;
 uniform float uVelocity;
 uniform float uParallax;
 uniform float uHover;
-uniform vec2  uPointer;
+uniform sampler2D uFlow;
 uniform vec3  uEdge;
 
 varying vec2 vUv;
@@ -49,13 +51,10 @@ void main() {
   uv.y += sin(uv.x * 3.14159) * uVelocity * 0.06;
   uv.y += uParallax * 0.05;
 
-  vec2 d = (uv - uPointer) * vec2(aspect, 1.0);
-  float dist = length(d);
-  float ripple = sin(dist * 30.0 - uTime * 5.0) * exp(-dist * 6.0) * 0.012 * uHover;
-  uv += normalize(d + 1e-5) * ripple;
+  uv -= texture2D(uFlow, vUv).rg;
 
   vec2 tuv = cover(uv, 1.12 + 0.05 * uHover);
-  float shift = 0.002 + abs(uVelocity) * 0.018 + uHover * 0.003;
+  float shift = abs(uVelocity) * 0.018;
   vec3 col;
   col.r = texture2D(uTexture, tuv + vec2(shift, 0.0)).r;
   col.g = texture2D(uTexture, tuv).g;

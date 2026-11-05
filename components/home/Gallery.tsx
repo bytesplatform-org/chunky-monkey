@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { gallery, site } from "@/data/site";
 import { prefersReducedMotion } from "@/lib/animation/prefs";
 import CtaLink from "./CtaLink";
+import LiquidImage from "./LiquidImage";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -45,9 +45,7 @@ export default function Gallery() {
         {gallery.map((row, r) => (
           <div key={r} data-gallery-row className="flex w-max gap-[clamp(12px,1.6vw,24px)] px-(--gut)">
             {row.map(src => (
-              <div key={src} className="relative aspect-square w-[clamp(180px,22vw,340px)] shrink-0 overflow-hidden rounded-3xl bg-dusk">
-                <Image src={src} alt="" fill sizes="(min-width: 1024px) 22vw, 180px" className="object-cover transition-transform duration-500 hover:scale-110" />
-              </div>
+              <LiquidImage key={src} src={src} alt="" sizes="(min-width: 1024px) 22vw, 180px" className="aspect-square w-[clamp(180px,22vw,340px)] shrink-0 rounded-3xl bg-dusk" />
             ))}
           </div>
         ))}

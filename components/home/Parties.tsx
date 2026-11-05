@@ -84,8 +84,8 @@ export default function Parties() {
       <div aria-hidden className="awning text-night" />
       {/* the party, in photos, either side of the words */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-[6%] hidden justify-between px-[3%] xl:flex">
-        <div data-drift="30"><Snapshot src="/media/photos/monkey-board.jpg" alt="" sizes="20vw" className="aspect-square w-[17vw] -rotate-6" /></div>
-        <div data-drift="50"><Snapshot src="/media/photos/selfie.jpg" alt="" sizes="20vw" className="aspect-square w-[17vw] rotate-6" /></div>
+        <div data-drift="30"><Snapshot src="/media/photos/monkey-board.jpg" alt="" sizes="20vw" className="pointer-events-auto aspect-square w-[17vw] -rotate-6" /></div>
+        <div data-drift="50"><Snapshot src="/media/photos/selfie.jpg" alt="" sizes="20vw" className="pointer-events-auto aspect-square w-[17vw] rotate-6" /></div>
       </div>
       <div aria-hidden className="pointer-events-none absolute inset-0">
         {/* the ones low in the section would drift across the words on a narrow screen */}

@@ -1,6 +1,6 @@
-import Image from "next/image";
 import { attractions, site } from "@/data/site";
 import CtaLink from "./CtaLink";
+import LiquidImage from "./LiquidImage";
 import { Star } from "./Deco";
 
 /** Four big cards that stack up over each other as the page scrolls. */
@@ -18,9 +18,7 @@ export default function Attractions() {
             className="slab grid overflow-hidden rounded-[32px] bg-night text-cream md:sticky md:min-h-[min(68lvh,600px)] md:grid-cols-2"
             style={{ top: `${72 + i * 22}px` }}
           >
-            <div className={`relative aspect-[4/3] md:aspect-auto ${i % 2 ? "md:order-2" : ""}`}>
-              <Image src={a.image} alt={a.name} fill sizes="(min-width: 768px) 48vw, 92vw" className="object-cover" />
-            </div>
+            <LiquidImage src={a.image} alt={a.name} sizes="(min-width: 768px) 48vw, 92vw" className={`aspect-[4/3] md:aspect-auto ${i % 2 ? "md:order-2" : ""}`} />
             <div className="flex flex-col justify-end gap-5 p-[clamp(24px,4vw,56px)]">
               <h3 className="display text-[clamp(2.8rem,6vw,6rem)] text-yellow">{a.name}</h3>
               <p className="max-w-md text-lg leading-snug">{a.line}</p>

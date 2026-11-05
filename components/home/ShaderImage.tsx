@@ -5,6 +5,7 @@ import Image from "next/image";
 import * as THREE from "three";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { createLiquidField } from "@/lib/gl/liquidField";
 import { createShaderCanvas } from "@/lib/gl/shaderCanvas";
 import { imageWaveFragment } from "@/lib/shaders/imageWave";
 import { prefersReducedMotion } from "@/lib/animation/prefs";
@@ -16,8 +17,8 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 
 /**
  * A photo drawn through the image-wave shader: dissolves in on scroll along
- * a neon edge, bends with scroll speed, parallaxes, and ripples under the
- * cursor. The plain <Image> stays underneath for SEO, reduced motion and
+ * a neon edge, bends with scroll speed, parallaxes, and flows like thick
+ * liquid under the cursor. The plain <Image> stays underneath for SEO, reduced motion and
  * no-WebGL; WebGL only starts when the frame nears the viewport.
  */
 export default function ShaderImage({
@@ -60,7 +61,7 @@ export default function ShaderImage({
         texture.minFilter = THREE.LinearFilter;
         const image = texture.image as HTMLImageElement;
 
-        const pointerTarget = new THREE.Vector2(0.5, 0.5);
+        const flow = createLiquidField();
         const uniforms = {
           uTexture: { value: texture },
           uImageRes: { value: new THREE.Vector2(image.naturalWidth, image.naturalHeight) },
@@ -69,7 +70,7 @@ export default function ShaderImage({
           uVelocity: { value: 0 },
           uParallax: { value: 0 },
           uHover: { value: 0 },
-          uPointer: { value: new THREE.Vector2(0.5, 0.5) },
+          uFlow: { value: flow.texture },
           uEdge: { value: new THREE.Color(edge) },
         };
 
@@ -89,10 +90,11 @@ export default function ShaderImage({
               uniforms.uVelocity.value = velocity;
               const r = el.getBoundingClientRect();
               uniforms.uParallax.value = clamp((r.left + r.width / 2 - innerWidth / 2) / innerWidth + (r.top + r.height / 2 - innerHeight / 2) / innerHeight, -1, 1);
-              uniforms.uPointer.value.lerp(pointerTarget, 0.1);
+              flow.settle(deltaMs / 1000);
             },
           });
         } catch {
+          flow.dispose();
           return texture.dispose();
         }
         setGl(true);
@@ -106,11 +108,17 @@ export default function ShaderImage({
           else trigger = ScrollTrigger.create({ trigger: el, start: "top 90%", once: true, onEnter: reveal });
         });
 
+        let last: { x: number; y: number } | null = null;
         const onMove = (e: PointerEvent) => {
+          if (e.pointerType === "touch") return; // a finger here is swiping the row or the page
           const r = el.getBoundingClientRect();
-          pointerTarget.set((e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height);
+          const x = (e.clientX - r.left) / r.width;
+          const y = 1 - (e.clientY - r.top) / r.height;
+          if (last) flow.drag(x, y, x - last.x, y - last.y, r.width / Math.max(r.height, 1));
+          last = { x, y };
         };
         const onEnter = () => {
+          last = null;
           gsap.to(uniforms.uHover, { value: 1, duration: 0.6, ease: "power2.out" });
           gsap.to(uniforms.uReveal, { value: 1, duration: 0.8 });
         };
@@ -129,6 +137,7 @@ export default function ShaderImage({
           el.removeEventListener("pointerleave", onLeave);
           shader.dispose();
           texture.dispose();
+          flow.dispose();
         };
       });
     };
