@@ -134,6 +134,28 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped {
   .balloon-bob { animation: none; }
 }
 
+/* A link whose underline draws in from the left on hover and leaves to the right. */
+.draw-underline {
+  position: relative;
+}
+.draw-underline::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.04em;
+  left: 0;
+  height: 2px;
+  background: currentColor;
+  content: "";
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 450ms var(--ease-out-expo);
+}
+.draw-underline:hover::after,
+.draw-underline:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
 /* Static stand-ins for WebGL scenes, hidden once the stage is running. */
 html[data-gl] .gl-fallback {
   display: none;

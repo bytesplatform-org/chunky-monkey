@@ -7,9 +7,16 @@ export default function Footer() {
     <footer className="relative overflow-hidden bg-night px-(--gut) pb-8 pt-[clamp(110px,12vw,180px)] text-cream">
       <div aria-hidden className="awning awning-candy" />
       <div className="grid gap-10 border-b-2 border-cream/25 pb-14 md:grid-cols-[1.4fr_1fr_1fr]">
-        <p className="max-w-sm text-lg">
-          A nationwide brand by Pioneer Amusement Services (Pvt.) Ltd, a subsidiary of the Dolmen Group.
-        </p>
+        <div className="flex flex-col justify-between gap-10">
+          <p className="max-w-sm text-lg">
+            A nationwide brand by Pioneer Amusement Services (Pvt.) Ltd, a subsidiary of the Dolmen Group.
+          </p>
+          <p className="display text-[clamp(1.75rem,2.6vw,2.5rem)]">
+            Made by{" "}
+            <a href="https://bytesplatform.com" target="_blank" rel="noopener noreferrer" className="draw-underline">Bytes</a>
+            {" "}with Love
+          </p>
+        </div>
         <nav aria-label="Footer" className="flex flex-col gap-2">
           <span className="eyebrow mb-2 text-cream/80">Explore</span>
           {nav.map(item => <a key={item.href} href={item.href} className="w-fit hover:text-yellow">{item.label}</a>)}
