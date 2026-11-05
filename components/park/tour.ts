@@ -68,6 +68,9 @@ function stops(scene: THREE.Object3D): Stop[] {
 /** stop count, fixed: the captions are placed by stop index */
 const STOP_COUNT = 24;
 
+/** The stops themselves, placed on the loaded scene, for a tour built on them elsewhere. */
+export const tourStops = stops;
+
 export type Tour = { positionCurve: THREE.CatmullRomCurve3; lookCurve: THREE.CatmullRomCurve3 };
 
 /** The tour's position and look curves, through the stops placed on the loaded scene. */

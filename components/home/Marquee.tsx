@@ -45,7 +45,7 @@ export default function Marquee({ items, className = "", speed = 60 }: { items: 
   const row = items.map((item, i) => (
     <span key={i} className="flex items-center gap-[0.4em] pr-[0.4em]">
       <span>{item}</span>
-      <span aria-hidden className="text-cream/30">/</span>
+      <svg aria-hidden viewBox="0 0 24 24" className="size-[0.5em] fill-current"><path d="M12 0l3 9h9l-7 5.5 2.7 9.5-7.7-6-7.7 6L7 14.5 0 9h9z" /></svg>
     </span>
   ));
 

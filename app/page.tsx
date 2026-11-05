@@ -5,6 +5,9 @@ import Hero from "@/components/home/Hero";
 import Marquee from "@/components/home/Marquee";
 import About from "@/components/home/About";
 import Rides from "@/components/home/Rides";
+import Attractions from "@/components/home/Attractions";
+import Gallery from "@/components/home/Gallery";
+import ParkTour from "@/components/home/ParkTour";
 import Promo from "@/components/home/Promo";
 import Parks from "@/components/home/Parks";
 import Parties from "@/components/home/Parties";
@@ -22,13 +25,20 @@ export default function Home() {
       <Header />
       <main id="main" className="relative z-[1]">
         <Hero />
-        {/* everything after the hero sits on solid night, covering the stage canvas */}
-        <div className="relative bg-night">
-          <Marquee items={rides.map(r => r.name)} className="border-y border-cream/10 py-6 text-[clamp(3rem,7vw,6.5rem)]" />
+        {/* the page is solid colour, covering the stage canvas, except where the tour opens a window onto it */}
+        <div className="relative bg-cream text-night">
+          <div className="bg-yellow">
+            <Marquee items={rides.map(r => r.name)} className="py-[0.2em] text-[clamp(3rem,7vw,6.5rem)]" />
+          </div>
           <About />
           <Rides />
-          <Promo />
           <Parks />
+        </div>
+        <ParkTour />
+        <div className="relative bg-cream text-night">
+          <Attractions />
+          <Promo />
+          <Gallery />
           <Parties />
           <Facilities />
           <Visit />

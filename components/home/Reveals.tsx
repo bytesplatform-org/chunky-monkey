@@ -11,6 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
  * Page-wide scroll reveals. Mount once, after the content.
  *   [data-reveal]       fades up, in staggered batches
  *   [data-reveal-words] each word lights from dim to full as it scrolls through
+ *   [data-drift="n"]    floats n px against the scroll, for a sense of depth
  */
 export default function Reveals() {
   useEffect(() => {
@@ -23,6 +24,15 @@ export default function Reveals() {
         once: true,
         onEnter: batch => gsap.to(batch, { y: 0, opacity: 1, duration: 1.1, ease: "expo.out", stagger: 0.08, overwrite: true }),
         onLeave: batch => gsap.set(batch, { y: 0, opacity: 1 }),
+      });
+
+      gsap.utils.toArray<HTMLElement>("[data-drift]").forEach(el => {
+        const drift = Number(el.dataset.drift);
+        gsap.fromTo(el, { y: drift }, {
+          y: -drift,
+          ease: "none",
+          scrollTrigger: { trigger: el, start: "top bottom", end: "bottom top", scrub: true },
+        });
       });
 
       gsap.utils.toArray<HTMLElement>("[data-reveal-words]").forEach(block => {

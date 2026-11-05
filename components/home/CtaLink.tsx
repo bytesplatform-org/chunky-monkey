@@ -1,16 +1,16 @@
 import type { ReactNode } from "react";
 
 const TONES = {
-  light: "bg-cream text-night hover:bg-white",
-  ghost: "border border-current/35 hover:border-current hover:bg-current/10",
-  dark: "bg-night text-cream hover:bg-plum",
+  yellow: "bg-yellow text-night hover:bg-[#ffd566]",
+  cream: "bg-cream text-night hover:bg-white",
+  blue: "bg-blue text-cream hover:bg-[#4560f5]",
 };
 
-/** A call-to-action link. */
+/** A call-to-action link, built like an arcade button. */
 export default function CtaLink({
   href,
   children,
-  tone = "light",
+  tone = "yellow",
   external = false,
 }: {
   href: string;
@@ -22,7 +22,7 @@ export default function CtaLink({
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className={`inline-flex h-12 items-center rounded-lg px-5 text-[0.9375rem] font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current ${TONES[tone]}`}
+      className={`chunky inline-flex h-13 items-center rounded-2xl px-6 font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current ${TONES[tone]}`}
     >
       {children}
     </a>

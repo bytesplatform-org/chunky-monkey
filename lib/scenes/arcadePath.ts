@@ -36,8 +36,14 @@ const STOPS: Stop[] = [
   [[65, 45, DOOR_Z], [PARK_CENTRE.x - 3, 0, DOOR_Z]], // the park from above, high in the frame for the words below it
 ];
 
+/** Where the walk comes to rest: the park from above. The home page's drone tour starts and ends here. */
+export const TOP_VIEW = {
+  position: new THREE.Vector3(...STOPS[STOPS.length - 1][0]),
+  look: new THREE.Vector3(...STOPS[STOPS.length - 1][1]),
+};
+
 /** Stops a caption or a beat hangs on. */
-export const STOP = { lobby: 2, aisle: 5, bumperCars: 7, door: 10 };
+export const STOP = { lobby: 2, aisle: 5, bumperCars: 7, onward: 8.4, door: 10 };
 
 const vec = (p: [number, number, number]) => new THREE.Vector3(...p);
 

@@ -8,6 +8,7 @@ import { useStage } from "@/components/gl/GLStage";
 import { createArcade } from "@/lib/scenes/arcade";
 import { STOP, progressAtStop } from "@/lib/scenes/arcadePath";
 import { loadArcade, loadHeroModels } from "@/lib/scenes/heroModels";
+import { parkTour } from "@/lib/scenes/parkTour";
 import { prefersReducedMotion } from "@/lib/animation/prefs";
 import { onReady } from "@/lib/animation/ready";
 import { site } from "@/data/site";
@@ -26,9 +27,9 @@ const atStop = (stop: number) => progressAtStop(stop) * WALK_SHARE;
 
 /** What the walk passes, hung on the path's stops. */
 const CAPTIONS = [
-  { title: "The lobby", line: "Claw machines, air hockey and skee-ball under one ring of lights.", from: STOP.lobby - 0.8, to: STOP.lobby + 2.2 },
-  { title: "The machine aisle", line: "Racers, pinball and the classics, side by side.", from: STOP.aisle - 0.2, to: STOP.aisle + 1.4 },
-  { title: "Bumper cars", line: "Steer. Bump. Laugh. Repeat.", from: STOP.bumperCars - 0.1, to: STOP.bumperCars + 1.3 },
+  { title: "The lobby", tone: "bg-pink", line: "Claw machines, air hockey and skee-ball under one ring of lights.", from: STOP.lobby - 0.8, to: STOP.lobby + 2.2 },
+  { title: "The machine aisle", tone: "bg-yellow", line: "Racers, pinball and the classics, side by side.", from: STOP.aisle - 0.2, to: STOP.aisle + 1.4 },
+  { title: "Bumper cars", tone: "bg-green", line: "Steer. Bump. Laugh. Repeat.", from: STOP.bumperCars - 0.1, to: STOP.bumperCars + 1.3 },
 ];
 
 /**
@@ -37,8 +38,8 @@ const CAPTIONS = [
  * picks the place on the path, and the camera eases after it. Without WebGL,
  * the model, or with reduced motion, it stays one still screen. The headline
  * gives way as the walk starts, a caption names each stretch as it's reached,
- * daylight floods in through the exit door, and the camera comes to rest above
- * the park on the closing line.
+ * the walk goes out of the exit door into the daylight, and the camera comes to
+ * rest above the park on the closing line.
  */
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
@@ -58,11 +59,12 @@ export default function Hero() {
       const arcade = createArcade(loaded, { tilt: !reduced });
       if (!reduced) section.style.height = WALK_LENGTH;
 
-      // stands down once the hero has scrolled off the screen (the page covers the canvas)
+      // stands down once the hero has scrolled off the screen (the page covers the canvas),
+      // until the drone tour opens a window in the page onto the park again
       let visible = true;
       const remove = stage.add({
         resize: arcade.pass.resize,
-        render: (renderer, frame) => { if (visible) arcade.pass.render(renderer, frame); },
+        render: (renderer, frame) => { if (visible || parkTour.active) arcade.pass.render(renderer, frame); },
         dispose: arcade.pass.dispose,
       });
 
@@ -117,12 +119,9 @@ export default function Hero() {
         tl.fromTo(caption, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, ease: "none", duration: 0.015 }, atStop(from))
           .to(caption, { autoAlpha: 0, y: -20, ease: "none", duration: 0.015 }, atStop(to));
       });
-      // stepping out: the daylight blooms over everything, then settles on the park,
-      // where the room's dark edges have no place
-      const door = atStop(STOP.door);
-      tl.to("[data-hero-edge]", { autoAlpha: 0, ease: "none", duration: 0.02 }, door - 0.02);
-      tl.fromTo("[data-hero-daylight]", { opacity: 0 }, { opacity: 0.92, ease: "power1.in", duration: 0.022 }, door - 0.022)
-        .to("[data-hero-daylight]", { opacity: 0, ease: "power1.out", duration: 0.05 }, door);
+      // the room's dark edges clear on the way to the door, so they never sit over the daylight
+      const onward = atStop(STOP.onward);
+      tl.to("[data-hero-edge]", { autoAlpha: 0, ease: "none", duration: atStop(STOP.door - 1.4) - onward }, onward);
       tl.fromTo("[data-hero-shade]", { autoAlpha: 0 }, { autoAlpha: 1, ease: "none", duration: 0.04 }, 0.88)
         .fromTo("[data-hero-close]", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, ease: "none", duration: 0.04 }, 0.9)
         .set({}, {}, 1);
@@ -138,12 +137,11 @@ export default function Hero() {
           <Image src="/media/park.jpg" alt="The Chunky Monkey park entrance lit up at dusk" fill priority sizes="100vw" className="object-cover" />
           <div className="absolute inset-0 bg-night/55" />
         </div>
-        <div data-hero-daylight aria-hidden className="pointer-events-none absolute inset-0 bg-[#fff6e5] opacity-0" />
         <div data-hero-edge aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-night/70 to-transparent" />
         <div data-hero-edge aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-night/90 via-night/45 to-transparent" />
 
         <div data-hero-main className="absolute inset-x-0 bottom-0 flex flex-col gap-6 px-(--gut) pb-[clamp(32px,6vh,64px)] lg:flex-row lg:items-end lg:justify-between lg:gap-12">
-          <h1 className="display overflow-hidden pb-[0.08em] text-[clamp(3.5rem,15vw,5.5rem)] lg:text-[clamp(5.5rem,8.2vw,9.5rem)]">
+          <h1 className="display overflow-hidden pb-[0.08em] text-yellow text-[clamp(3.5rem,15vw,5.5rem)] lg:text-[clamp(5.5rem,8.2vw,9.5rem)]">
             <span data-hero-title className="block">Fun for all.</span>
           </h1>
           <div className="flex max-w-md flex-col gap-5 lg:pb-[1vw]">
@@ -151,30 +149,32 @@ export default function Hero() {
               Rides, food and big nights out for the whole family. Open every day, {site.hours.time}.
             </p>
             <div data-hero-fade className="flex flex-wrap gap-3">
-              <CtaLink href="#rides">Explore the rides</CtaLink>
-              <CtaLink href={site.links.booking} tone="ghost" external>Book a party</CtaLink>
+              <CtaLink href="#rides" tone="yellow">Explore the rides</CtaLink>
+              <CtaLink href={site.links.booking} tone="cream" external>Book an event</CtaLink>
             </div>
           </div>
         </div>
 
         {CAPTIONS.map(caption => (
           <div key={caption.title} data-hero-caption aria-hidden className="pointer-events-none invisible absolute bottom-0 left-0 max-w-xl px-(--gut) pb-[clamp(32px,6vh,64px)] opacity-0">
-            <p className="display text-[clamp(2.25rem,4vw,4rem)]">{caption.title}</p>
-            <p className="mt-3 text-lg leading-snug text-cream/85">{caption.line}</p>
+            <div className={`slab -rotate-1 rounded-3xl p-[clamp(20px,2.4vw,32px)] text-night ${caption.tone}`}>
+              <p className="display text-[clamp(2.25rem,4vw,4rem)]">{caption.title}</p>
+              <p className="mt-3 text-lg leading-snug">{caption.line}</p>
+            </div>
           </div>
         ))}
 
         {/* a low shade: the room's end is bright where the closing words land */}
         <div data-hero-shade aria-hidden className="pointer-events-none invisible absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-night/90 via-night/50 to-transparent opacity-0" />
         <div data-hero-close className="invisible absolute inset-x-0 bottom-0 flex flex-col gap-6 px-(--gut) pb-[clamp(32px,6vh,64px)] opacity-0 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
-          <p className="display text-[clamp(3rem,12vw,5rem)] lg:text-[clamp(4.5rem,6.6vw,7.5rem)]">Come and play.</p>
+          <p className="display text-yellow text-[clamp(3rem,12vw,5rem)] lg:text-[clamp(4.5rem,6.6vw,7.5rem)]">Come and play.</p>
           <div className="flex max-w-md flex-col gap-5 lg:pb-[0.8vw]">
             <p className="text-lg leading-snug text-cream/85">
-              Three parks, open every day, {site.hours.time}.
+              Two parks, open every day, {site.hours.time}.
             </p>
             <div className="flex flex-wrap gap-3">
-              <CtaLink href="#rides">Explore the rides</CtaLink>
-              <CtaLink href={site.links.booking} tone="ghost" external>Book a party</CtaLink>
+              <CtaLink href="#rides" tone="yellow">Explore the rides</CtaLink>
+              <CtaLink href={site.links.booking} tone="cream" external>Book an event</CtaLink>
             </div>
           </div>
         </div>

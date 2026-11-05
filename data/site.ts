@@ -28,10 +28,12 @@ export const site = {
 };
 
 export const nav = [
+  { label: "Home", href: "#top" },
+  { label: "About Us", href: "#about" },
   { label: "Rides", href: "#rides" },
-  { label: "Parks", href: "#parks" },
-  { label: "Parties", href: "#parties" },
-  { label: "Visit", href: "#visit" },
+  { label: "Attractions", href: "#attractions" },
+  { label: "Media Gallery", href: "#gallery" },
+  { label: "Contact Us", href: "#contact" },
 ];
 
 export const rides = [
@@ -46,10 +48,32 @@ export const rides = [
 ];
 
 export const parks = [
-  { city: "Karachi", name: "DHA Phase IV", note: "Adjacent Nisar Shaheed Park", flagship: true },
-  { city: "Karachi", name: "Sea View", note: "By the sea, under the lights" },
-  { city: "Hyderabad", name: "Hyderabad", note: "Fun for all, up the road" },
+  {
+    area: "Karachi",
+    name: "DHA Phase IV",
+    note: "Adjacent Nisar Shaheed Park",
+    directions: "https://www.google.com/maps/search/?api=1&query=Chunky+Monkey+DHA+Phase+4+Karachi",
+  },
+  {
+    area: "At the mall",
+    name: "Saima Jinnah Icon Mall",
+    note: "Come and find us at the mall.",
+    directions: "https://www.google.com/maps/search/?api=1&query=Saima+Jinnah+Icon+Mall",
+  },
 ];
+
+export const attractions = [
+  { name: "Indoor Rides", line: "Games and rides for children from 1 to 5, with comfortable seats for the parents watching.", image: "/media/photos/indoor.jpg" },
+  { name: "Outdoor Rides", line: "Take in the sights or get your adrenaline pumping. There's a ride here for every age.", image: "/media/photos/outdoor.jpg" },
+  { name: "Food & Drink", line: "Fast food, desi cuisine, snacks and drinks, in a separate cafeteria.", image: "/media/photos/food.jpg" },
+  { name: "Events & Parties", line: "Music, catering, decorations and a team that shapes it all around your birthday or corporate event.", image: "/media/photos/event.jpg" },
+];
+
+/** two rows of photos for the gallery */
+export const gallery = [
+  ["flying-chair-night", "bumper-cars", "frisbee-night", "clown", "octopus", "gyro-night", "family-coaster"],
+  ["dodgem-night", "kid-rides", "flash-tower", "monkey-board-2", "action-arm", "stilts", "caterpillar"],
+].map(row => row.map(name => `/media/photos/${name}.jpg`));
 
 export const facilities = [
   { name: "Dedicated parking", icon: "parking" },
@@ -61,8 +85,8 @@ export const facilities = [
 ] as const;
 
 export const stats = [
-  { value: 3, suffix: "", label: "Parks" },
-  { value: 8, suffix: "+", label: "Rides" },
-  { value: 8, suffix: "", label: "Hours of fun, nightly" },
-  { value: 7, suffix: "", label: "Days a week" },
+  { value: 2, suffix: "", label: "Parks" },
+  { value: 30, suffix: "+", label: "Rides at DHA Phase IV" },
+  { value: 1996, suffix: "", label: "The year DHA Phase IV opened" },
+  { value: 1200, suffix: "+", label: "Guests we can host at an event" },
 ];

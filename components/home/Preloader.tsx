@@ -64,12 +64,12 @@ export default function Preloader() {
     <div
       ref={root}
       data-preloader
-      className="fixed inset-0 z-[200] flex flex-col justify-between bg-night p-(--gut) text-cream"
+      className="fixed inset-0 z-[200] flex flex-col justify-between bg-yellow p-(--gut) text-night"
       style={{ clipPath: "inset(0% 0% 0% 0%)" }}
     >
       <span />
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img data-logo src="/media/logo.png" alt="" className="mx-auto w-[min(40vw,180px)]" />
+      <img data-logo src="/media/logo.png" alt="" className="mx-auto w-[min(48vw,220px)]" />
       <span data-count className="display self-end text-[clamp(4rem,14vw,11rem)] tabular-nums">0</span>
     </div>
   );

@@ -35,7 +35,7 @@ export default function Cursor() {
     <div
       ref={root}
       aria-hidden
-      className="pointer-events-none fixed left-0 top-0 z-[300] rounded-md bg-cream px-2.5 py-1 text-sm font-medium text-night opacity-0 transition-opacity duration-150"
+      className="pointer-events-none fixed left-0 top-0 z-[300] rounded-full bg-night px-3 py-1 text-sm font-semibold text-cream opacity-0 transition-opacity duration-150"
     />
   );
 }

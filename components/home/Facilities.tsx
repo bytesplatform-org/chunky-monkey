@@ -12,22 +12,23 @@ const ICONS: Record<(typeof facilities)[number]["icon"], React.ReactNode> = {
 export default function Facilities() {
   return (
     <section className="relative px-(--gut) py-[clamp(96px,12vw,180px)]">
+      <div aria-hidden className="awning text-blue" />
       <div className="grid gap-14 lg:grid-cols-[1fr_1.4fr]">
         <div>
           <h2 data-reveal className="display text-[clamp(3rem,6.5vw,6.5rem)]">
-            The fun part&apos;s on us.<br /><span className="text-cream/45">So is everything else.</span>
+            The fun part&apos;s on us.<br /><span className="text-night/55">So is everything else.</span>
           </h2>
         </div>
-        <ul className="grid grid-cols-2 gap-px self-end overflow-hidden rounded-3xl border border-cream/10 bg-cream/10 sm:grid-cols-3">
+        <ul data-reveal className="slab grid grid-cols-2 gap-0.5 self-end overflow-hidden rounded-3xl bg-night sm:grid-cols-3">
           {facilities.map(f => (
-            <li key={f.name} data-reveal className="group flex aspect-square flex-col justify-between bg-night p-[clamp(16px,2.4vw,32px)] transition-colors duration-500 hover:bg-dusk">
+            <li key={f.name} className="group flex aspect-square flex-col justify-between bg-white p-[clamp(16px,2.4vw,32px)] transition-colors duration-200 hover:bg-yellow">
               <svg
-                viewBox="0 0 24 24"
+                viewBox="-5 -5 34 34"
                 aria-hidden
-                className="size-[clamp(36px,4vw,52px)] transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110"
+                className="slab size-[clamp(56px,6vw,84px)] rounded-full bg-pink transition-transform duration-300 [--lift:3px] group-hover:-rotate-12 group-hover:scale-110"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.6"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >

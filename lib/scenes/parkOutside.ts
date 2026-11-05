@@ -12,12 +12,15 @@ import type { Frame } from "@/lib/gl/stage";
 import { rigPark } from "@/components/park/rigs";
 import { mergeParts } from "./mergeParts";
 import { PARK_CENTRE } from "./arcadePath";
+import { buildParkTour } from "./parkTour";
 
 /** Lifts the road to the foot of the door's steps. */
 const LIFT = 0.5;
 
 /** The door plane, a little in front of the door itself. */
-const CUT = new THREE.Plane(new THREE.Vector3(1, 0, 0), -32.5);
+const CUT_AT_DOOR = -32.5;
+/** Far behind everything: moving the plane here brings the land back without recompiling a material. */
+const NO_CUT = 10000;
 
 /** The rides that move: their parts can't be merged. */
 const MOVING = new Set(["Ferris_Wheel", "SwingRide", "RollerCoaster", "BalloonTower", "BumperCars", "Octopus_Ride"]);
@@ -27,6 +30,7 @@ const SKY_ON_SCREEN = "#f3e2cd";
 const SKY_BEFORE_ACES: [number, number, number] = [1.844, 0.956, 0.507];
 
 export function createParkOutside(park: GLTF, terrain: GLTF, opts: { composer: boolean; shadows: boolean }) {
+  const cut = new THREE.Plane(new THREE.Vector3(1, 0, 0), CUT_AT_DOOR);
   const scene = new THREE.Scene();
   const fogColor = new THREE.Color().setRGB(...SKY_BEFORE_ACES);
   // a composer's ACES takes the background with it; drawn straight, the background skips tone mapping
@@ -54,6 +58,7 @@ export function createParkOutside(park: GLTF, terrain: GLTF, opts: { composer: b
   const land = new THREE.Group();
   land.rotation.y = -Math.PI / 2;
   land.position.set(PARK_CENTRE.x, LIFT, PARK_CENTRE.z);
+  land.updateMatrix();
   scene.add(land);
 
   // a private copy: the rigs and the merge rearrange it
@@ -69,11 +74,17 @@ export function createParkOutside(park: GLTF, terrain: GLTF, opts: { composer: b
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh) return;
     mesh.castShadow = mesh.receiveShadow = opts.shadows;
-    (mesh.material as THREE.Material).clippingPlanes = [CUT];
+    (mesh.material as THREE.Material).clippingPlanes = [cut];
   });
 
   return {
     scene,
+    /** the drone tour, on this park */
+    tour: buildParkTour(park.scene, land.matrix),
+    /** Whether the land stops at the door. The tour flies with the room undrawn, so it wants all of it. */
+    cutAtDoor(on: boolean) {
+      cut.constant = on ? CUT_AT_DOOR : NO_CUT;
+    },
     update(frame: Frame) {
       rig(frame.time, frame.dt);
       mixer.update(frame.dt);

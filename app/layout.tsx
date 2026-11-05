@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s · Chunky Monkey",
   },
   description:
-    "Rides, food and big nights out for the whole family. Chunky Monkey amusement parks in Karachi and Hyderabad, open daily from 4 PM till midnight.",
+    "Rides, food and big nights out for the whole family. Chunky Monkey amusement parks, open daily from 4 PM till midnight.",
 };
 
 export const viewport: Viewport = {

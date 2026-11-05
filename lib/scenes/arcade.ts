@@ -19,6 +19,7 @@ import { DOOR_IN_VIEW_X, LEFT_ARCADE_X, placeCamera } from "./arcadePath";
 import type { HeroModels } from "./heroModels";
 import { mergeParts } from "./mergeParts";
 import { createParkOutside } from "./parkOutside";
+import { lensAt, parkTour } from "./parkTour";
 
 /** The lens (vertical degrees), and the narrowest aspect it still covers without widening. */
 const FOV = 65;
@@ -26,6 +27,14 @@ const MIN_ASPECT = 1.2;
 
 /** How quickly the camera catches up with the scrubbed target (per second). */
 const FOLLOW = 6;
+
+/** The drone tour, as on /park: its long lens, widest on narrow screens, and its slower catch-up. */
+const TOUR = { fov: 40, maxFov: 72, follow: 4, near: 0.5, far: 900 };
+const WALK_CLIP = { near: 0.05, far: 140 };
+
+/** The lens that keeps the width a `fov` lens shows at MIN_ASPECT, on a narrower screen. */
+const fitted = (fov: number, aspect: number, max: number) =>
+  aspect >= MIN_ASPECT ? fov : Math.min(max, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(fov) / 2) * (MIN_ASPECT / aspect))));
 
 /** The cursor eases the camera off its path: a look toward it plus a few centimetres of drift. */
 const TILT = { yaw: 2.2, pitch: 1.4, shift: 0.07, damping: 1.9 };
@@ -53,7 +62,11 @@ export function createArcade(models: { arcade: GLTF } & Partial<Omit<HeroModels,
     scene.add(lamp);
   }
 
-  const camera = new THREE.PerspectiveCamera(FOV, 1, 0.05, 140);
+  const camera = new THREE.PerspectiveCamera(FOV, 1, WALK_CLIP.near, WALK_CLIP.far);
+  let walkFov = FOV;
+  let tourFov = TOUR.fov;
+  let touring = false;
+  let tourP = 0;
 
   const outside = models.park && models.terrain
     ? createParkOutside(models.park, models.terrain, { composer: bloom, shadows: bloom })
@@ -81,25 +94,42 @@ export function createArcade(models: { arcade: GLTF } & Partial<Omit<HeroModels,
     resize(width, height) {
       camera.aspect = width / height;
       // tall screens: widen the lens so the room's width stays in frame
-      camera.fov = camera.aspect >= MIN_ASPECT
-        ? FOV
-        : Math.min(85, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(FOV) / 2) * (MIN_ASPECT / camera.aspect))));
+      walkFov = fitted(FOV, camera.aspect, 85);
+      tourFov = fitted(TOUR.fov, camera.aspect, TOUR.maxFov);
+      camera.fov = walkFov;
       camera.updateProjectionMatrix();
       composer?.setSize(width, height, false);
     },
     render(renderer, frame) {
-      state.p += (state.target - state.p) * (1 - Math.exp(-FOLLOW * frame.dt));
+      const wantTour = !!outside && parkTour.active;
+      if (wantTour !== touring) {
+        touring = wantTour;
+        if (touring) tourP = parkTour.target;
+        outside?.cutAtDoor(!touring);
+        camera.near = touring ? TOUR.near : WALK_CLIP.near;
+        camera.far = touring ? TOUR.far : WALK_CLIP.far;
+        camera.fov = walkFov;
+        camera.updateProjectionMatrix();
+      }
       tilt.x = THREE.MathUtils.damp(tilt.x, pointer.x, TILT.damping, frame.dt);
       tilt.y = THREE.MathUtils.damp(tilt.y, pointer.y, TILT.damping, frame.dt);
-      placeCamera(camera, state.p);
+      if (touring) {
+        tourP += (parkTour.target - tourP) * (1 - Math.exp(-TOUR.follow * frame.dt));
+        outside!.tour.place(camera, tourP);
+        camera.fov = THREE.MathUtils.lerp(walkFov, tourFov, lensAt(tourP));
+        camera.updateProjectionMatrix();
+      } else {
+        state.p += (state.target - state.p) * (1 - Math.exp(-FOLLOW * frame.dt));
+        placeCamera(camera, state.p);
+      }
       camera.translateX(tilt.x * TILT.shift);
       camera.translateY(tilt.y * TILT.shift);
       camera.rotateY(-tilt.x * THREE.MathUtils.degToRad(TILT.yaw));
       camera.rotateX(tilt.y * THREE.MathUtils.degToRad(TILT.pitch));
 
       const x = camera.position.x;
-      const drawOutside = !!outside && x > DOOR_IN_VIEW_X;
-      const drawArcade = !outside || x < LEFT_ARCADE_X;
+      const drawOutside = !!outside && (touring || x > DOOR_IN_VIEW_X);
+      const drawArcade = !touring && (!outside || x < LEFT_ARCADE_X);
       if (drawOutside) outside.update(frame);
       // whichever draws first owns the clear and the background; with the park behind it, the room has neither
       scene.background = drawOutside ? null : background;
@@ -121,7 +151,7 @@ export function createArcade(models: { arcade: GLTF } & Partial<Omit<HeroModels,
         arcadePass!.enabled = drawArcade;
         arcadePass!.clearPass.enabled = !drawOutside;
         // daylight is far over the threshold that picks out neon: bloom is for indoors
-        bloomEffect!.intensity = BLOOM.intensity * (1 - THREE.MathUtils.smoothstep(x, 32, 38));
+        bloomEffect!.intensity = touring ? 0 : BLOOM.intensity * (1 - THREE.MathUtils.smoothstep(x, 32, 38));
         composer.render(frame.dt);
         return;
       }

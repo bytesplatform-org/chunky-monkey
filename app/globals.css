@@ -5,10 +5,10 @@
   --color-dusk: #1a1446;
   --color-plum: #2b1a5c;
   --color-cream: #fff6e5;
-  --color-red: #ef3b39;
+  --color-red: #d92a22;
   --color-yellow: #ffc93c;
   --color-green: #4cc35a;
-  --color-blue: #3b5bff;
+  --color-blue: #2f4bf0;
   --color-orange: #ff7a2f;
   --color-pink: #ff4fa3;
 
@@ -51,7 +51,7 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped {
 /* Display type: Bricolage Grotesque, tight and a little condensed. */
 .display {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   font-stretch: 86%;
   line-height: 1;
   letter-spacing: -0.012em;
@@ -60,6 +60,78 @@ html.lenis:not(.lenis-autoToggle).lenis-stopped {
 .eyebrow {
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+/* The house look: a thick outline and a hard shadow, like a moulded plastic part. */
+.slab {
+  border: 2px solid var(--color-night);
+  box-shadow: 0 var(--lift, 6px) 0 var(--color-night);
+}
+
+/* An arcade button: it stands proud of the page and presses down into it. */
+.chunky {
+  --lift: 5px;
+  border: 2px solid var(--color-night);
+  box-shadow: 0 var(--lift) 0 var(--color-night);
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background-color 0.15s;
+}
+.chunky:hover {
+  transform: translateY(2px);
+  box-shadow: 0 calc(var(--lift) - 2px) 0 var(--color-night);
+}
+.chunky:active {
+  transform: translateY(var(--lift));
+  box-shadow: 0 0 0 var(--color-night);
+}
+
+/*
+ * A tent awning's scalloped edge, hung from the top of a section. It takes the
+ * text colour, which is set to the colour of the section above.
+ */
+.awning {
+  --bump: clamp(14px, 1.8vw, 26px);
+  position: absolute;
+  inset-inline: 0;
+  top: -1px;
+  z-index: 2;
+  height: var(--bump);
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0, currentColor calc(var(--bump) - 0.5px), transparent var(--bump)) 0 0 / calc(var(--bump) * 2) 100% repeat-x;
+}
+
+/* The big-top stripes, hanging from the top of the footer. */
+.awning-candy {
+  height: calc(var(--bump) * 2.5);
+  background: repeating-linear-gradient(90deg, var(--color-red) 0 calc(var(--bump) * 2), var(--color-cream) calc(var(--bump) * 2) calc(var(--bump) * 4));
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--bump)) no-repeat,
+    radial-gradient(circle at 50% 0, #000 calc(var(--bump) - 0.5px), transparent var(--bump)) 0 100% / calc(var(--bump) * 2) var(--bump) repeat-x;
+}
+
+/* An admission ticket: notches bitten out where the tear lines meet the edge. */
+.ticket {
+  border-radius: 32px;
+}
+@media (min-width: 768px) {
+  .ticket {
+    mask:
+      radial-gradient(circle 16px at 33.333% 0, transparent 98%, #000),
+      radial-gradient(circle 16px at 66.666% 0, transparent 98%, #000),
+      radial-gradient(circle 16px at 33.333% 100%, transparent 98%, #000),
+      radial-gradient(circle 16px at 66.666% 100%, transparent 98%, #000);
+    mask-composite: intersect;
+  }
+}
+
+@keyframes balloon-bob {
+  from { transform: translateY(-6px) rotate(-2deg); }
+  to { transform: translateY(6px) rotate(2deg); }
+}
+.balloon-bob {
+  animation: balloon-bob 3.2s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .balloon-bob { animation: none; }
 }
 
 /* Static stand-ins for WebGL scenes, hidden once the stage is running. */
