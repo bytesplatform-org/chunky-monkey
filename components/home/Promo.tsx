@@ -1,6 +1,6 @@
 import { site } from "@/data/site";
 import ShaderImage from "./ShaderImage";
-import PillLink from "./PillLink";
+import CtaLink from "./CtaLink";
 
 export default function Promo() {
   return (
@@ -14,8 +14,8 @@ export default function Promo() {
             Offers change through the season. Follow us for the latest deals before you plan your night.
           </p>
           <div data-reveal className="mt-10 flex flex-wrap gap-3">
-            <PillLink href={site.social.Instagram} tone="yellow" external>Latest offers</PillLink>
-            <PillLink href={site.whatsapp} tone="ghost" external>Ask on WhatsApp</PillLink>
+            <CtaLink href={site.social.Instagram} tone="light" external>Latest offers</CtaLink>
+            <CtaLink href={site.whatsapp} tone="ghost" external>Ask on WhatsApp</CtaLink>
           </div>
         </div>
         <div data-reveal className="relative mx-auto w-full max-w-[560px]">

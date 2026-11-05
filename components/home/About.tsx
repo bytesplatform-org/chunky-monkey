@@ -1,7 +1,7 @@
 import { site, stats } from "@/data/site";
 import { Words } from "./Reveals";
 import Counter from "./Counter";
-import PillLink from "./PillLink";
+import CtaLink from "./CtaLink";
 
 export default function About() {
   return (
@@ -15,7 +15,7 @@ export default function About() {
           the little ones, food and drink, and nights out the whole family remembers.
         </p>
         <div data-reveal>
-          <PillLink href={site.links.about} tone="ghost" external>More about us</PillLink>
+          <CtaLink href={site.links.about} tone="ghost" external>More about us</CtaLink>
         </div>
       </div>
       <dl className="mt-[clamp(64px,10vw,140px)] grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-cream/10 bg-cream/10 lg:grid-cols-4">

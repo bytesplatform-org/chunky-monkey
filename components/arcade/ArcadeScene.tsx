@@ -6,20 +6,11 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { Bloom, EffectComposer, ToneMapping } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
+import { AMBIENT, BACKGROUND_BEFORE_ACES, BLOOM, HEMISPHERE, LAMP, LAMPS } from "@/lib/scenes/arcadeLights";
 import { DRACO } from "../park/draco";
 import { MAX_PITCH, SPAWN, confine, speedWith, type WalkInput } from "./walk";
 
 const MODEL = "/models/arcade.glb";
-
-/** Reads as #14121f on screen: the background passes through the composer's ACES too, which would crush that to black. */
-const BACKGROUND = "#262431";
-
-/** The model ships no lights: one over the corridor, one over the lobby, four pairs down the long room. */
-const LAMPS: [number, number, number][] = [
-  [9.5, 3.9, 3],
-  [7.2, 3.9, -7.3],
-  ...[14, 19.3, 24.7, 30].flatMap((x): [number, number, number][] => [[x, 3.9, -2.5], [x, 3.9, -10]]),
-];
 
 /** How quickly the walk reaches the speed asked of it, and coasts to a stop (per second). */
 const DAMPING = 8;
@@ -93,17 +84,17 @@ export default function ArcadeScene({ inputRef, active, onReady }: {
 }) {
   return (
     <>
-      <color attach="background" args={[BACKGROUND]} />
-      <ambientLight intensity={0.35} />
-      <hemisphereLight args={["#e8e4ff", "#3a2d4d", 0.7]} />
+      <color attach="background" args={[BACKGROUND_BEFORE_ACES]} />
+      <ambientLight intensity={AMBIENT} />
+      <hemisphereLight args={[HEMISPHERE.sky, HEMISPHERE.ground, HEMISPHERE.intensity]} />
       {LAMPS.map(position => (
-        <pointLight key={position.join()} position={position} intensity={8} distance={9} decay={2} color="#fff1e0" />
+        <pointLight key={position.join()} position={position} {...LAMP} />
       ))}
       <Arcade onReady={onReady} />
       <Walker inputRef={inputRef} active={active} />
       {/* three skips the renderer's tone mapping inside a composer, so ACES is an effect here, after the bloom */}
       <EffectComposer multisampling={4}>
-        <Bloom mipmapBlur intensity={0.45} luminanceThreshold={0.9} luminanceSmoothing={0.2} />
+        <Bloom mipmapBlur {...BLOOM} />
         <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       </EffectComposer>
     </>

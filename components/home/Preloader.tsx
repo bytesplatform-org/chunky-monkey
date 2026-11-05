@@ -5,11 +5,11 @@ import gsap from "gsap";
 import { prefersReducedMotion } from "@/lib/animation/prefs";
 import { markReady } from "@/lib/animation/ready";
 import { lockScroll } from "@/lib/animation/scroll";
-import { loadCoaster, onCoasterProgress } from "@/lib/scenes/coasterModel";
+import { loadHeroModels, onHeroProgress } from "@/lib/scenes/heroModels";
 
 /**
- * Covers the first paint and counts up while the coaster model streams in,
- * so the hero ride is ready the moment the curtain lifts. Then it signals the
+ * Covers the first paint and counts up while the hero's models stream in,
+ * so the hero walk is ready the moment the curtain lifts. Then it signals the
  * page (markReady). Server-rendered so nothing flashes first; a CSS failsafe
  * hides it if the script never runs. A failed download lifts it anyway.
  */
@@ -30,7 +30,7 @@ export default function Preloader() {
     const counter = { value: 0 };
     const setCount = () => { count.textContent = String(Math.round(counter.value)); };
     const follow = gsap.quickTo(counter, "value", { duration: 0.5, ease: "power1.out", onUpdate: setCount });
-    const offProgress = onCoasterProgress(f => follow(Math.min(96, f * 100)));
+    const offProgress = onHeroProgress(f => follow(Math.min(96, f * 100)));
 
     const tl = gsap.timeline();
     tl.from("[data-logo]", { scale: 0.6, rotate: -12, opacity: 0, duration: 1, ease: "back.out(1.8)" });
@@ -50,7 +50,7 @@ export default function Preloader() {
         .to(el, { clipPath: "inset(0% 0% 100% 0%)", duration: 1, ease: "expo.inOut" }, "<0.2")
         .set(el, { display: "none" });
     };
-    loadCoaster().then(lift, lift);
+    loadHeroModels().then(lift, lift);
 
     return () => {
       cancelled = true;

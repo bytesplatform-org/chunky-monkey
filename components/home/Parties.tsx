@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { site } from "@/data/site";
 import { prefersReducedMotion } from "@/lib/animation/prefs";
-import PillLink from "./PillLink";
+import CtaLink from "./CtaLink";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -77,7 +77,7 @@ export default function Parties() {
         <ul data-occasions className="mt-12 flex flex-wrap justify-center gap-3">
           {OCCASIONS.map(o => (
             <li key={o} className="overflow-hidden rounded-full">
-              <span data-occasion className="block rounded-full border border-cream/50 px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.12em]">{o}</span>
+              <span data-occasion className="block rounded-full border border-cream/50 px-5 py-2.5 text-[0.9375rem] font-medium">{o}</span>
             </li>
           ))}
         </ul>
@@ -85,8 +85,8 @@ export default function Parties() {
           Tell us the date and the headcount, and we&apos;ll help you plan a party they&apos;ll talk about for years.
         </p>
         <div data-reveal className="mt-10 flex flex-wrap justify-center gap-3">
-          <PillLink href={site.links.booking} tone="yellow" external>Book an event</PillLink>
-          <PillLink href={site.whatsapp} tone="ghost" external>WhatsApp us</PillLink>
+          <CtaLink href={site.links.booking} tone="light" external>Book an event</CtaLink>
+          <CtaLink href={site.whatsapp} tone="ghost" external>WhatsApp us</CtaLink>
         </div>
       </div>
     </section>

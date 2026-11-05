@@ -12,8 +12,8 @@
   --color-orange: #ff7a2f;
   --color-pink: #ff4fa3;
 
-  --font-display: var(--font-heading), "Arial Black", Impact, sans-serif;
-  --font-sans: var(--font-dm-sans), Arial, Helvetica, sans-serif;
+  --font-display: var(--font-heading), "Arial Narrow", Arial, sans-serif;
+  --font-sans: var(--font-body), Arial, Helvetica, sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -33,17 +33,28 @@ body {
   font-family: var(--font-sans);
 }
 
+/*
+ * Lenis clips the page while it's stopped, which takes the scrollbar away and
+ * widens the layout by its width. Anything measured then (ScrollTrigger's pins,
+ * during the preloader) stays too wide once it returns, and the page scrolls
+ * sideways. lockScroll holds the page without it.
+ */
+html.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: visible;
+}
+
 ::selection {
   background: var(--color-yellow);
   color: var(--color-night);
 }
 
-/* Display type: Boogaloo, a single weight. */
+/* Display type: Bricolage Grotesque, tight and a little condensed. */
 .display {
   font-family: var(--font-display);
-  font-weight: 400;
-  line-height: 0.9;
-  letter-spacing: 0;
+  font-weight: 700;
+  font-stretch: 86%;
+  line-height: 1;
+  letter-spacing: -0.012em;
 }
 
 .eyebrow {
@@ -54,12 +65,6 @@ body {
 /* Static stand-ins for WebGL scenes, hidden once the stage is running. */
 html[data-gl] .gl-fallback {
   display: none;
-}
-
-/* Hide the cursor follower's native twin only where it's running. */
-html[data-cursor] a,
-html[data-cursor] button {
-  cursor: none;
 }
 
 /* If the loader script never runs, don't trap the page under it.

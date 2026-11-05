@@ -1,5 +1,5 @@
 import { site } from "@/data/site";
-import PillLink from "./PillLink";
+import CtaLink from "./CtaLink";
 
 export default function Visit() {
   return (
@@ -18,7 +18,7 @@ export default function Visit() {
           <span className="eyebrow text-night/60">Flagship park</span>
           <p className="text-[clamp(1.4rem,2vw,1.9rem)] font-semibold leading-tight">{site.address}</p>
           <div className="mt-auto pt-4">
-            <PillLink href={site.directions} tone="dark" external>Get directions</PillLink>
+            <CtaLink href={site.directions} tone="dark" external>Get directions</CtaLink>
           </div>
         </div>
         <div data-reveal className="flex flex-col gap-3 bg-yellow p-[clamp(20px,3vw,40px)]">

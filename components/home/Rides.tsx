@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { rides, site } from "@/data/site";
 import ShaderImage from "./ShaderImage";
-import PillLink from "./PillLink";
+import CtaLink from "./CtaLink";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,7 +24,7 @@ export default function Rides() {
     if (!section || !row) return;
     const mm = gsap.matchMedia();
     mm.add("(min-width: 1025px) and (prefers-reduced-motion: no-preference)", () => {
-      const distance = () => row.scrollWidth - window.innerWidth;
+      const distance = () => row.scrollWidth - document.documentElement.clientWidth;
       const tween = gsap.to(row, {
         x: () => -distance(),
         ease: "none",
@@ -63,7 +63,7 @@ export default function Rides() {
             <p className="text-lg leading-snug text-night/70">
               From fast and thrilling to gentle and nostalgic, there&apos;s a ride for every age and every mood.
             </p>
-            <PillLink href={site.links.rides} tone="dark" external>View all rides</PillLink>
+            <CtaLink href={site.links.rides} tone="dark" external>View all rides</CtaLink>
           </div>
         </div>
 

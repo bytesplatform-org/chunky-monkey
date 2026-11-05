@@ -44,24 +44,24 @@ export default function Header() {
     <>
       <header
         ref={bar}
-        className="group fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-(--gut) py-4 transition-[background-color,backdrop-filter] duration-500 data-solid:bg-night/60 data-solid:backdrop-blur-md"
+        className="group fixed inset-x-0 top-0 z-[100] flex items-center justify-between px-(--gut) py-4 transition-colors duration-300 data-solid:bg-night"
       >
         <a href="#top" aria-label="Chunky Monkey, back to top" className="relative h-12 w-15">
           <Image src="/media/logo.png" alt="" fill sizes="60px" className="object-contain" priority />
         </a>
-        <nav aria-label="Main" className="hidden items-center gap-1 rounded-full border border-cream/15 bg-night/30 p-1 backdrop-blur-md md:flex">
-          {nav.map(item => (
-            <a key={item.href} href={item.href} className="rounded-full px-5 py-2.5 text-sm font-medium text-cream/85 transition-colors hover:bg-cream hover:text-night">
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-[clamp(20px,2.4vw,36px)]">
+          <nav aria-label="Main" className="hidden items-center gap-[clamp(20px,2.4vw,36px)] md:flex">
+            {nav.map(item => (
+              <a key={item.href} href={item.href} className="text-[0.9375rem] font-medium text-cream/80 transition-colors hover:text-cream">
+                {item.label}
+              </a>
+            ))}
+          </nav>
           <a
             href={site.links.booking}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden h-11 items-center rounded-full bg-yellow px-5 text-xs font-bold uppercase tracking-[0.14em] text-night transition-colors hover:bg-cream sm:inline-flex"
+            className="hidden h-10 items-center rounded-lg bg-cream px-4 text-[0.9375rem] font-medium text-night transition-colors hover:bg-white sm:inline-flex"
           >
             Book a party
           </a>
@@ -70,7 +70,7 @@ export default function Header() {
             onClick={() => setOpen(true)}
             aria-label="Open menu"
             aria-expanded={open}
-            className="grid size-11 place-items-center rounded-full border border-cream/30 md:hidden"
+            className="grid size-10 place-items-center rounded-lg border border-cream/30 md:hidden"
           >
             <span className="flex w-4 flex-col gap-1.5"><span className="h-0.5 bg-cream" /><span className="h-0.5 bg-cream" /></span>
           </button>
@@ -80,11 +80,11 @@ export default function Header() {
       {open && (
         <div role="dialog" aria-modal="true" aria-label="Menu" className="fixed inset-0 z-[150] flex flex-col bg-night px-(--gut) py-4" data-lenis-prevent>
           <div className="flex justify-end">
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close menu" className="grid size-11 place-items-center rounded-full border border-cream/30 text-xl">×</button>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close menu" className="grid size-10 place-items-center rounded-lg border border-cream/30 text-xl">×</button>
           </div>
           <nav aria-label="Mobile" className="mt-10 flex flex-col gap-2">
             {nav.map(item => (
-              <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="display text-7xl">
+              <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="display text-6xl">
                 {item.label}
               </a>
             ))}
