@@ -19,7 +19,7 @@ const anchor = (scene: THREE.Object3D, name: string, fallback: THREE.Vector3) =>
 };
 
 /**
- * The stops. The octopus orbit, the drop tower and bumper car shots are offsets from
+ * The stops. The octopus orbit, the drop tower, bumper car and swing ride shots are offsets from
  * those rides as they sit in the loaded model, so they follow the rides
  * when the model moves them.
  */
@@ -29,13 +29,16 @@ function stops(scene: THREE.Object3D): Stop[] {
   const tower = anchor(scene, "BalloonTower", v(-14.5, 0, 0));
   const ferris = anchor(scene, "Ferris_Wheel", v(8.25, 0, -14.3));
   const bumper = anchor(scene, "BumperCars", v(14, 0, 0));
+  const swings = anchor(scene, "SwingRide", v(10.3, 0, 17.84));
   const octo = (x: number, y: number, z: number) => octopus.clone().add(v(x, y, z));
   const near = (x: number, y: number, z: number) => tower.clone().add(v(x, y, z));
   const pad = (x: number, y: number, z: number) => bumper.clone().add(v(x, y, z));
+  const swing = (x: number, y: number, z: number) => swings.clone().add(v(x, y, z));
   const OCTOPUS = octo(0, 1.8, 0);
   const TOWER = near(0, 7, 0);
   const FERRIS = ferris.clone().setY(6.6);
   const BUMPER = pad(0, 0.7, 0);
+  const SWINGS = swing(0, 3.6, 0);
 
   return [
     [v(34, 28, 40), v(0, 2, 0)], //  0 hero
@@ -61,12 +64,16 @@ function stops(scene: THREE.Object3D): Stop[] {
     [pad(-4.5, 3, 8.5), BUMPER], // 20 down to the bumper cars, low enough to see under the roof
     [pad(0, 2.9, 10), BUMPER], // 21
     [pad(5, 7, 9.5), BUMPER], // 22 up over the trees
-    [v(22, 20, 18), v(2, 2, 2)], // 23 up to the hero shot
+    [swing(9.5, 5.5, -3.5), SWINGS], // 23 round the swing ride
+    [swing(8, 5, 7.5), SWINGS], // 24
+    [swing(-1, 4.6, 11), SWINGS], // 25
+    [swing(-8, 6, 6), SWINGS], // 26
+    [v(22, 20, 18), v(2, 2, 2)], // 27 up to the hero shot
   ];
 }
 
 /** stop count, fixed: the captions are placed by stop index */
-const STOP_COUNT = 24;
+export const STOP_COUNT = 28;
 
 /** The stops themselves, placed on the loaded scene, for a tour built on them elsewhere. */
 export const tourStops = stops;
@@ -94,6 +101,7 @@ export const CAPTIONS: Caption[] = [
   { title: "Roller Coaster", line: "Seventy metres of track and one loop.", from: at(11), to: at(14.2) },
   { title: "Ferris Wheel", line: "Fourteen gondolas over the whole park.", from: at(14.6), to: at(19.2) },
   { title: "Bumper Cars", line: "Eight cars, one small floor.", from: at(19.8), to: at(21.8) },
+  { title: "Swing Ride", line: "Swing out wide and fly over the park.", from: at(22.6), to: at(26.3) },
 ];
 
 /** index into CAPTIONS for loop position `u`, or -1 between rides */

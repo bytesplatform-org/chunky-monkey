@@ -6,11 +6,12 @@
  */
 
 import * as THREE from "three";
-import { CAPTIONS, captionAt, tourStops } from "@/components/park/tour";
+import { CAPTIONS, STOP_COUNT, captionAt, tourStops } from "@/components/park/tour";
 import { TOP_VIEW } from "./arcadePath";
+import type { ParkExplore } from "./parkExplore";
 
-/** Written by the section, read by the pass. */
-export const parkTour = { active: false, target: 0 };
+/** `active` and `target` are written by the section and read by the pass; the pass offers `explorer` for pointing at the rides. */
+export const parkTour = { active: false, target: 0, explorer: null as ParkExplore | null };
 
 /** The camera's way down from the top view to the /park tour's approach to the gate, in the park's own space. */
 const DESCENT: [position: THREE.Vector3, look: THREE.Vector3] = [new THREE.Vector3(1, 30, 40), new THREE.Vector3(0, 4, 14)];
@@ -30,15 +31,17 @@ export function buildParkTour(scene: THREE.Object3D, land: THREE.Matrix4) {
   const looks = new THREE.CatmullRomCurve3(stops.map(s => s[1]), false, "centripetal");
   const look = new THREE.Vector3();
   return {
+    /** Places the camera at tour progress p, and returns where it's looking. */
     place(camera: THREE.Camera, p: number) {
       positions.getPoint(p, camera.position);
       camera.lookAt(looks.getPoint(p, look));
+      return look;
     },
   };
 }
 
 /** Curve points in the whole path: the lead, the /park stops used, and the top view again. */
-const POINTS = LEAD + (24 - FROM_STOP) + 1;
+const POINTS = LEAD + (STOP_COUNT - FROM_STOP) + 1;
 
 /** Tour progress at curve point `i`. */
 const atPoint = (i: number) => i / (POINTS - 1);
@@ -50,7 +53,7 @@ export const lensAt = (p: number) =>
 /** The /park caption showing at tour progress p, or null. */
 export function captionFor(p: number) {
   const stop = p * (POINTS - 1) - LEAD + FROM_STOP;
-  const i = captionAt(stop / 24);
+  const i = captionAt(stop / STOP_COUNT);
   return i >= 0 ? CAPTIONS[i] : null;
 }
 

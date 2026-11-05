@@ -18,6 +18,7 @@ import { AMBIENT, BACKGROUND, BACKGROUND_BEFORE_ACES, BLOOM, HEMISPHERE, LAMP, L
 import { DOOR_IN_VIEW_X, LEFT_ARCADE_X, placeCamera } from "./arcadePath";
 import type { HeroModels } from "./heroModels";
 import { mergeParts } from "./mergeParts";
+import { createParkExplore } from "./parkExplore";
 import { createParkOutside } from "./parkOutside";
 import { lensAt, parkTour } from "./parkTour";
 
@@ -72,6 +73,9 @@ export function createArcade(models: { arcade: GLTF } & Partial<Omit<HeroModels,
     ? createParkOutside(models.park, models.terrain, { composer: bloom, shadows: bloom })
     : null;
 
+  const explore = outside ? createParkExplore(camera, outside.rides, outside.groundAt) : null;
+  parkTour.explorer = explore;
+
   let composer: EffectComposer | null = null;
   let bloomEffect: BloomEffect | null = null;
   let outsidePass: RenderPass | null = null;
@@ -115,17 +119,21 @@ export function createArcade(models: { arcade: GLTF } & Partial<Omit<HeroModels,
       tilt.y = THREE.MathUtils.damp(tilt.y, pointer.y, TILT.damping, frame.dt);
       if (touring) {
         tourP += (parkTour.target - tourP) * (1 - Math.exp(-TOUR.follow * frame.dt));
-        outside!.tour.place(camera, tourP);
+        if (explore?.orbiting) explore.orbit();
+        else explore?.follow(outside!.tour.place(camera, tourP));
         camera.fov = THREE.MathUtils.lerp(walkFov, tourFov, lensAt(tourP));
         camera.updateProjectionMatrix();
       } else {
         state.p += (state.target - state.p) * (1 - Math.exp(-FOLLOW * frame.dt));
         placeCamera(camera, state.p);
       }
-      camera.translateX(tilt.x * TILT.shift);
-      camera.translateY(tilt.y * TILT.shift);
-      camera.rotateY(-tilt.x * THREE.MathUtils.degToRad(TILT.yaw));
-      camera.rotateX(tilt.y * THREE.MathUtils.degToRad(TILT.pitch));
+      // free orbit owns the camera between frames: a tilt on top would add up
+      if (!explore?.orbiting) {
+        camera.translateX(tilt.x * TILT.shift);
+        camera.translateY(tilt.y * TILT.shift);
+        camera.rotateY(-tilt.x * THREE.MathUtils.degToRad(TILT.yaw));
+        camera.rotateX(tilt.y * THREE.MathUtils.degToRad(TILT.pitch));
+      }
 
       const x = camera.position.x;
       const drawOutside = !!outside && (touring || x > DOOR_IN_VIEW_X);
@@ -164,6 +172,8 @@ export function createArcade(models: { arcade: GLTF } & Partial<Omit<HeroModels,
       renderer.toneMapping = toneMapping;
     },
     dispose() {
+      explore?.dispose();
+      if (parkTour.explorer === explore) parkTour.explorer = null;
       window.removeEventListener("pointermove", onPointerMove);
       document.removeEventListener("pointerleave", onPointerLeave);
       composer?.dispose();

@@ -10,7 +10,7 @@ import ParkLoader from "./ParkLoader";
 import { CAPTIONS, RIDES } from "./tour";
 
 /** Scroll distance of one lap of the tour. */
-const TOUR_LENGTH = "1500lvh";
+const TOUR_LENGTH = "1750lvh";
 
 const scrollMax = () => document.documentElement.scrollHeight - window.innerHeight;
 
