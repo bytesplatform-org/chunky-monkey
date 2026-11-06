@@ -25,7 +25,7 @@ const CUT_AT_DOOR = -32.5;
 const NO_CUT = 10000;
 
 /** The rides that move: their parts can't be merged. */
-const MOVING = new Set(["Ferris_Wheel", "SwingRide", "RollerCoaster", "BalloonTower", "BumperCars", "Octopus_Ride"]);
+const MOVING = new Set(["PirateShip", "SwingRide", "RollerCoaster", "BalloonTower", "BumperCars", "Octopus_Ride"]);
 
 /** #f3e2cd as it should read on screen, before ACES (which would otherwise grey it down). */
 const SKY_ON_SCREEN = "#f3e2cd";

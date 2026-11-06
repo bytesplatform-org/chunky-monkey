@@ -3,8 +3,8 @@
  * parts under one node (spokes beside gondolas beside the base), so each rig
  * regroups the moving parts under pivots at load, keeping their world
  * placement, then drives the pivots each frame from the clock. The octopus,
- * the drop tower and the bumper cars aren't here: they ship their own clips,
- * played in ParkScene.
+ * the drop tower, the bumper cars and the pirate ship aren't here: they ship
+ * their own clips, played in ParkScene.
  */
 
 import * as THREE from "three";
@@ -26,30 +26,6 @@ function pivot(root: THREE.Object3D, position: THREE.Vector3, members: THREE.Obj
 }
 
 const named = (root: THREE.Object3D, name: string) => root.getObjectByName(name);
-
-/** Wheel turns on its axle; gondolas counter-turn so they hang level, with a little sway. */
-function ferrisWheel(root: THREE.Object3D): Rig {
-  const axle = named(root, "FW_Axle")!;
-  const axis = UP.clone().applyQuaternion(axle.quaternion).normalize();
-  const wheel = pivot(root, axle.position, parts(root, /^FW_(Rim|RimIn|Spoke|Hub|Axle)/));
-
-  const gondolas: THREE.Group[] = [];
-  for (let i = 0; ; i++) {
-    const hanger = named(root, `FW_Hanger_${i}`);
-    if (!hanger) break;
-    const top = hanger.position.clone().add(new THREE.Vector3(0, 0.25, 0));
-    const members = ["FW_Gondola_", "FW_GRoof_", "FW_GWin_", "FW_Hanger_"].map(n => named(root, n + i)!);
-    const g = pivot(root, top, members);
-    wheel.attach(g);
-    gondolas.push(g);
-  }
-
-  return time => {
-    const a = time * 0.12;
-    wheel.quaternion.setFromAxisAngle(axis, a);
-    gondolas.forEach((g, i) => g.quaternion.setFromAxisAngle(axis, -a + Math.sin(time * 1.4 + i) * 0.04));
-  };
-}
 
 /** Top, chains and seats turn around the column, with a slow wobble. */
 function swingRide(root: THREE.Object3D): Rig {
@@ -125,7 +101,6 @@ function rollerCoaster(root: THREE.Object3D): Rig {
 }
 
 const RIGS: Record<string, (root: THREE.Object3D) => Rig> = {
-  Ferris_Wheel: ferrisWheel,
   SwingRide: swingRide,
   RollerCoaster: rollerCoaster,
 };

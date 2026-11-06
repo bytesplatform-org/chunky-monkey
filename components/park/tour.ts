@@ -27,7 +27,7 @@ function stops(scene: THREE.Object3D): Stop[] {
   scene.updateMatrixWorld(true);
   const octopus = anchor(scene, "Octopus_Ride", v(-9, 0, 14));
   const tower = anchor(scene, "BalloonTower", v(-14.5, 0, 0));
-  const ferris = anchor(scene, "Ferris_Wheel", v(8.25, 0, -14.3));
+  const ship = anchor(scene, "PirateShip", v(8.25, 0, -14.3));
   const bumper = anchor(scene, "BumperCars", v(14, 0, 0));
   const swings = anchor(scene, "SwingRide", v(10.3, 0, 17.84));
   const octo = (x: number, y: number, z: number) => octopus.clone().add(v(x, y, z));
@@ -36,7 +36,7 @@ function stops(scene: THREE.Object3D): Stop[] {
   const swing = (x: number, y: number, z: number) => swings.clone().add(v(x, y, z));
   const OCTOPUS = octo(0, 1.8, 0);
   const TOWER = near(0, 7, 0);
-  const FERRIS = ferris.clone().setY(6.6);
+  const SHIP = ship.clone().setY(4.5);
   const BUMPER = pad(0, 0.7, 0);
   const SWINGS = swing(0, 3.6, 0);
 
@@ -56,11 +56,11 @@ function stops(scene: THREE.Object3D): Stop[] {
     [v(-11.2, 6.8, -7.4), v(-5.5, 3.4, -11)], // 12
     [v(-5.4, 6.4, -9.6), v(-1, 3, -15.5)], // 13
     [v(-1.2, 6.4, -14), v(-0.6, 4.2, -20.5)], // 14
-    [v(1.8, 7.5, -21.5), FERRIS], // 15 around the wheel
-    [v(8.5, 9.5, -29), FERRIS], // 16
-    [v(21, 10, -19), FERRIS], // 17
-    [v(19.5, 9, -4.5), FERRIS], // 18
-    [v(6.5, 10, -1.5), FERRIS], // 19
+    [v(1.8, 7.5, -21.5), SHIP], // 15 around the ship
+    [v(8.5, 9.5, -29), SHIP], // 16
+    [v(21, 10, -19), SHIP], // 17
+    [v(19.5, 9, -4.5), SHIP], // 18
+    [v(6.5, 10, -1.5), SHIP], // 19
     [pad(-4.5, 3, 8.5), BUMPER], // 20 down to the bumper cars, low enough to see under the roof
     [pad(0, 2.9, 10), BUMPER], // 21
     [pad(5, 7, 9.5), BUMPER], // 22 up over the trees
@@ -99,7 +99,7 @@ export const CAPTIONS: Caption[] = [
   { title: "The Octopus", line: "Eight arms spinning round the hub.", from: at(4.5), to: at(8.4) },
   { title: "Drop Tower", line: "A slow climb, then the drop.", from: at(8.6), to: at(10.6) },
   { title: "Roller Coaster", line: "Seventy metres of track and one loop.", from: at(11), to: at(14.2) },
-  { title: "Ferris Wheel", line: "Fourteen gondolas over the whole park.", from: at(14.6), to: at(19.2) },
+  { title: "Pirate Ship", line: "Swing up high and hold on tight.", from: at(14.6), to: at(19.2) },
   { title: "Bumper Cars", line: "Eight cars, one small floor.", from: at(19.8), to: at(21.8) },
   { title: "Swing Ride", line: "Swing out wide and fly over the park.", from: at(22.6), to: at(26.3) },
 ];
@@ -111,7 +111,7 @@ export const captionAt = (u: number) => CAPTIONS.findIndex(c => u >= c.from && u
 export const RIDES: Record<string, string> = {
   Octopus_Ride: "Octopus",
   RollerCoaster: "Roller Coaster",
-  Ferris_Wheel: "Ferris Wheel",
+  PirateShip: "Pirate Ship",
   BalloonTower: "Drop Tower",
   BumperCars: "Bumper Cars",
   SwingRide: "Swing Ride",
