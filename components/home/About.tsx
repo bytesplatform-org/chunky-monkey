@@ -2,49 +2,58 @@ import { site, stats } from "@/data/site";
 import { Words } from "./Reveals";
 import Counter from "./Counter";
 import CtaLink from "./CtaLink";
-import Snapshot from "./Snapshot";
 import { Squiggle, Star } from "./Deco";
+import PhotoDeck from "./PhotoDeck";
+
+/** Half-circle bites out of both sides: side by side, two tickets make a punched hole on their tear line. */
+const TICKET = {
+  mask: "radial-gradient(circle 13px at 0 50%, transparent 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle 13px at 100% 50%, transparent 97%, #000) right / 51% 100% no-repeat",
+};
 
 export default function About() {
   return (
-    <section id="about" className="relative overflow-hidden px-(--gut) py-[clamp(80px,11vw,170px)]">
-      <div className="grid items-center gap-[clamp(48px,6vw,96px)] lg:grid-cols-[1.3fr_1fr]">
-        <div>
-          <p data-reveal-words className="display text-[clamp(2.4rem,4.5vw,5.25rem)] leading-[1.02]">
-            <Words text="Chunky Monkey is Pakistan's home of family fun. Built to bring international-standard amusement parks to the cities we love." />
+    <section id="about" className="relative overflow-hidden px-(--gut) py-[clamp(80px,9vw,140px)]">
+      <Star color="var(--color-pink)" className="left-[3%] top-[6%] hidden w-[clamp(32px,3.6vw,56px)] md:block" />
+      <Squiggle color="var(--color-blue)" className="right-[4%] top-[8%] hidden w-[clamp(64px,7vw,110px)] md:block" />
+
+      <div className="relative grid items-center gap-[clamp(48px,6vw,96px)] lg:grid-cols-[7fr_5fr]">
+        <div className="flex flex-col items-start">
+          <h2 data-reveal-words className="display text-[clamp(3.2rem,7.2vw,8rem)]">
+            <Words text="Chunky Monkey is Pakistan's home of" />{" "}
+            <span data-word className="slab mt-[0.12em] inline-block -rotate-2 rounded-[0.22em] bg-yellow px-[0.18em] pb-[0.06em] [--lift:6px]">family fun.</span>
+          </h2>
+          <p data-reveal-words className="mt-[clamp(28px,3.4vw,44px)] max-w-2xl text-[clamp(1.2rem,1.7vw,1.6rem)] font-medium leading-snug">
+            <Words text="Built to bring international-standard amusement parks to the cities we love." />
           </p>
-          <p data-reveal className="mt-10 max-w-xl text-lg leading-relaxed">
-            A nationwide brand by Pioneer Amusement Services (Pvt.) Ltd, part of the Dolmen Group. Rides for the brave and
-            the little ones, food and drink, and nights out the whole family remembers.
+          <p data-reveal className="mt-4 max-w-2xl text-lg leading-relaxed">
+            A nationwide brand by Pioneer Amusement Services (Pvt.) Ltd, part of the Dolmen Group. Rides for the brave and the
+            little ones, food and drink, and nights out the whole family remembers.
           </p>
           <div data-reveal className="mt-8">
             <CtaLink href={site.links.about} external>More about us</CtaLink>
           </div>
         </div>
-
-        {/* a loose pile of snapshots, each drifting at its own depth */}
-        <div className="relative aspect-square w-full max-lg:max-w-[560px]">
-          <div data-drift="24" className="absolute left-0 top-[6%] w-[78%]">
-            <Snapshot src="/media/photos/park-front.jpg" alt="The Chunky Monkey building with its big logo over the entrance" sizes="(min-width: 1024px) 34vw, 78vw" className="aspect-[3/2] -rotate-3" />
+        {/* the deck drifts against the scroll; the reveal is a layer in, since each needs its own transform */}
+        <div data-drift="60">
+          <div data-reveal>
+            <PhotoDeck />
           </div>
-          <div data-drift="60" className="absolute bottom-[4%] left-[4%] w-[46%]">
-            <Snapshot src="/media/photos/ride-girl.jpg" alt="A girl laughing on a ride" sizes="(min-width: 1024px) 20vw, 46vw" className="aspect-square rotate-2" />
-          </div>
-          <div data-drift="100" className="absolute bottom-[12%] right-0 w-[52%]">
-            <Snapshot src="/media/photos/ride-friends.jpg" alt="Two friends on a swinging ride" sizes="(min-width: 1024px) 22vw, 52vw" className="aspect-square rotate-[5deg]" />
-          </div>
-          <Star color="var(--color-yellow)" drift={70} className="right-[6%] top-0 w-[13%]" />
-          <Squiggle color="var(--color-pink)" drift={30} className="bottom-0 right-[8%] w-[26%]" />
         </div>
       </div>
 
-      <dl data-reveal className="slab mt-[clamp(56px,8vw,110px)] grid grid-cols-2 gap-0.5 overflow-hidden rounded-3xl bg-night lg:grid-cols-4">
+      {/* a roll of tickets: the hard shadow sits on the roll, since each ticket's notches are cut with a mask,
+          and they overlap by a pixel, or fractional column widths leave a hairline between them */}
+      <dl data-reveal className="relative mt-[clamp(56px,6vw,88px)] grid grid-cols-2 gap-y-3 drop-shadow-[0_8px_0_var(--color-night)] lg:grid-cols-4 lg:gap-y-0">
         {stats.map(stat => (
-          <div key={stat.label} className="flex flex-col gap-2 bg-yellow p-[clamp(18px,2.4vw,32px)]">
-            <dt className="eyebrow order-2">{stat.label}</dt>
-            <dd className="display order-1 text-[clamp(2.8rem,6vw,6rem)]">
+          <div
+            key={stat.label}
+            className="flex flex-col gap-1 rounded-[22px] border-dashed border-night/45 bg-yellow px-[clamp(26px,3vw,48px)] py-[clamp(20px,2.4vw,34px)] transition-transform duration-300 ease-out-expo even:-ml-px even:border-l-2 hover:z-10 hover:-translate-y-2 hover:-rotate-1 lg:rounded-none lg:border-l-2 lg:not-first:-ml-px lg:first:rounded-l-[28px] lg:first:border-l-0 lg:last:rounded-r-[28px]"
+            style={TICKET}
+          >
+            <dd className="display order-1 text-[clamp(3rem,6vw,6.25rem)]">
               <Counter to={stat.value} />{stat.suffix}
             </dd>
+            <dt className="order-2 text-[clamp(1rem,1.3vw,1.25rem)] font-semibold leading-snug">{stat.label}</dt>
           </div>
         ))}
       </dl>

@@ -85,8 +85,8 @@ export const facilities = [
 ] as const;
 
 export const stats = [
-  { value: 2, suffix: "", label: "Parks" },
-  { value: 30, suffix: "+", label: "Rides at DHA Phase IV" },
-  { value: 1996, suffix: "", label: "The year DHA Phase IV opened" },
-  { value: 1200, suffix: "+", label: "Guests we can host at an event" },
+  { value: 2, suffix: "", label: "Branches" },
+  { value: 30, suffix: "+", label: "Rides" },
+  { value: 100, suffix: "+", label: "Arcade machines" },
+  { value: 30, suffix: "", label: "Years in business" },
 ];
