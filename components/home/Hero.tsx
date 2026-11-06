@@ -25,11 +25,11 @@ const WALK_SHARE = 0.94;
 /** Fraction of the hero's scroll at which the camera reaches a stop on the path. */
 const atStop = (stop: number) => progressAtStop(stop) * WALK_SHARE;
 
-/** What the walk passes, hung on the path's stops. */
+/** The lines over the walk, hung on the path's stops. */
 const CAPTIONS = [
-  { title: "The lobby", tone: "bg-pink", line: "Claw machines, air hockey and skee-ball under one ring of lights.", from: STOP.lobby - 0.8, to: STOP.lobby + 2.2 },
-  { title: "The machine aisle", tone: "bg-yellow", line: "Racers, pinball and the classics, side by side.", from: STOP.aisle - 0.2, to: STOP.aisle + 1.4 },
-  { title: "Bumper cars", tone: "bg-green", line: "Steer. Bump. Laugh. Repeat.", from: STOP.bumperCars - 0.1, to: STOP.bumperCars + 1.3 },
+  { title: "An immersive experience", tone: "bg-pink", from: STOP.lobby - 0.8, to: STOP.lobby + 2.2 },
+  { title: "Where the fun never stops", tone: "bg-yellow", from: STOP.aisle - 0.2, to: STOP.aisle + 1.4 },
+  { title: "Made for making memories", tone: "bg-green", from: STOP.bumperCars - 0.1, to: STOP.bumperCars + 1.3 },
 ];
 
 /**
@@ -37,7 +37,7 @@ const CAPTIONS = [
  * walk is built, the hero grows to WALK_LENGTH and pins; its scroll progress
  * picks the place on the path, and the camera eases after it. Without WebGL,
  * the model, or with reduced motion, it stays one still screen. The headline
- * gives way as the walk starts, a caption names each stretch as it's reached,
+ * gives way as the walk starts, a line rises over each stretch as it's reached,
  * the walk goes out of the exit door into the daylight, and the camera comes to
  * rest above the park on the closing line.
  */
@@ -157,10 +157,9 @@ export default function Hero() {
         </div>
 
         {CAPTIONS.map(caption => (
-          <div key={caption.title} data-hero-caption aria-hidden className="pointer-events-none invisible absolute bottom-0 left-0 max-w-xl px-(--gut) pb-[clamp(32px,6vh,64px)] opacity-0">
-            <div className={`slab -rotate-1 rounded-3xl p-[clamp(20px,2.4vw,32px)] text-night ${caption.tone}`}>
-              <p className="display text-[clamp(2.25rem,4vw,4rem)]">{caption.title}</p>
-              <p className="mt-3 text-lg leading-snug">{caption.line}</p>
+          <div key={caption.title} data-hero-caption aria-hidden className="pointer-events-none invisible absolute bottom-0 left-0 max-w-full px-(--gut) pb-[clamp(32px,6vh,64px)] opacity-0">
+            <div className={`slab w-fit -rotate-1 rounded-3xl p-[clamp(20px,2.4vw,32px)] text-night ${caption.tone}`}>
+              <p className="display text-[clamp(2.25rem,4vw,4rem)] sm:whitespace-nowrap">{caption.title}</p>
             </div>
           </div>
         ))}
