@@ -15,16 +15,16 @@ export default function Attractions() {
         {attractions.map((a, i) => (
           <article
             key={a.name}
-            className="slab grid overflow-hidden rounded-[32px] bg-night text-cream md:sticky md:min-h-[min(68lvh,600px)] md:grid-cols-2"
-            style={{ top: `${72 + i * 22}px` }}
+            className="-mx-[3px] grid overflow-hidden rounded-[32px] border-[3px] border-cream bg-night p-3.5 text-cream md:sticky md:min-h-[min(60lvh,520px)] md:grid-cols-2"
+            style={{ top: `${72 + i * 14}px` }}
           >
-            <LiquidImage src={a.image} alt={a.name} sizes="(min-width: 768px) 48vw, 92vw" className={`aspect-[4/3] md:aspect-auto ${i % 2 ? "md:order-2" : ""}`} />
-            <div className="flex flex-col justify-end gap-5 p-[clamp(24px,4vw,56px)]">
-              <h3 className="display text-[clamp(2.8rem,6vw,6rem)] text-yellow">{a.name}</h3>
-              <p className="max-w-md text-lg leading-snug">{a.line}</p>
-              {i === attractions.length - 1 && (
-                <div className="pt-2"><CtaLink href={site.links.booking} external>Book your event</CtaLink></div>
-              )}
+            <LiquidImage src={a.image} alt={a.name} sizes="(min-width: 768px) 48vw, 92vw" className={`aspect-[4/3] rounded-[16px] md:aspect-auto ${i % 2 ? "md:order-2" : ""}`} />
+            <div className="flex flex-col justify-between gap-8 px-[clamp(12px,3.4vw,48px)] py-[clamp(20px,2.4vw,32px)]">
+              <h3 className="display max-w-[4.6em] text-[clamp(3.4rem,8vw,9rem)] text-yellow">{a.name}</h3>
+              <div className="flex flex-col items-start gap-6">
+                <p className="max-w-[26em] text-[clamp(1.25rem,1.7vw,1.625rem)] leading-snug">{a.line}</p>
+                {i === attractions.length - 1 && <CtaLink href={site.links.booking} external>Book your event</CtaLink>}
+              </div>
             </div>
           </article>
         ))}
