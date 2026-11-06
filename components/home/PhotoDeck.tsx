@@ -9,7 +9,7 @@ import LiquidImage from "./LiquidImage";
 gsap.registerPlugin(Draggable);
 
 const CARDS = [
-  { src: "/media/photos/park-front.jpg", alt: "The Chunky Monkey building with its big logo over the entrance", title: "DHA Phase IV", note: "Karachi" },
+  { src: "/media/park-dha.jpg", alt: "The lit Chunky Monkey sign above the DHA Phase IV entrance and ticket counter at dusk", title: "DHA Phase IV", note: "Karachi" },
   { src: "/media/photos/outdoor.jpg", alt: "Two friends mid-swing on an outdoor ride", title: "Outdoor rides", note: "For every age" },
   { src: "/media/photos/event.jpg", alt: "A birthday party set up with balloons", title: "Birthdays and events", note: "Room for 1200+" },
   { src: "/media/photos/indoor.jpg", alt: "A boy playing an arcade basketball game", title: "Indoor games", note: "Open till midnight" },
