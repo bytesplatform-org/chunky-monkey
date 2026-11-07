@@ -194,11 +194,11 @@ const caption = (leg: string, title: string, line: string): Caption => {
 
 export const CAPTIONS: Caption[] = [
   caption("gate", "The Gate", "In under the arch and down the boulevard."),
-  caption("octopus", "The Octopus", "Eight arms spinning round the hub."),
-  caption("tower", "Drop Tower", "A slow climb, then the drop."),
-  caption("coaster", "Roller Coaster", "Seventy metres of track and one loop."),
+  caption("octopus", "The Octopus", "A merry spin for the whole family."),
+  caption("tower", "Drop Tower", "The best view in the park, for a second."),
+  caption("coaster", "Roller Coaster", "Hands up for every hill and turn."),
   caption("ship", "Pirate Ship", "Swing up high and hold on tight."),
-  caption("bumper", "Bumper Cars", "Eight cars, one small floor."),
+  caption("bumper", "Bumper Cars", "Grab a car and bump your friends."),
   caption("swings", "Swing Ride", "Swing out wide and fly over the park."),
 ];
 
